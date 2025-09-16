@@ -37,11 +37,11 @@ provider "azurerm" {
   }
 }
 
-#provider "azurerm" {
-#  features {}
-#  subscription_id = "4ae1ac6d-b9f0-4d08-8593-4c282ded34aa"
-#  alias = "internal_monitoring"
-#}
+provider "azurerm" {
+  features {}
+  subscription_id = "4ae1ac6d-b9f0-4d08-8593-4c282ded34aa"
+  alias = "internal_monitoring"
+}
 
 provider "azurerm" {
   features {}
