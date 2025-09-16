@@ -18,7 +18,7 @@ The solution is deployed to Azure and consists of the following key components:
 * **Azure DNS**: Manages the custom domains (e.g., `snappass.eng.ailevate.com` and `www.snappass.eng.ailevate.com`) and the managed TLS certificates.
 * **Azure Log Analytics**: A central workspace that collects diagnostic logs and metrics from all resources for monitoring and auditing.
 
-[Image of a cloud architecture diagram for Snappass]
+
 
 ---
 ## 🚀 Deployment
@@ -39,9 +39,6 @@ Before running the pipeline, you must create a **Variable Group** in your Azure 
 | `AZURE_RG_LOCATION` | The Azure region where resources will be deployed. | `eastus2` |
 | `AZURE_RG_NAME` | The name of the resource group for the application. | `rg-snappass-prod-eus2` |
 | `AZURE_SERVICE_SPN` | The name of the Azure DevOps Service Connection for deploying resources. | `azdo-svc-prod` |
-| `DNS_RG_NAME` | The name of the resource group where the `ailevate.com` DNS zone is located. | `rg-sre-dns-prod` |
-| `LOG_ANALYTICS_RG_NAME` | The RG name for the central Log Analytics Workspace. | `rg-sre-monitoring-prod` |
-| `LOG_ANALYTICS_WORKSPACE_NAME`| The name of the central Log Analytics Workspace. | `log-sre-monitoring-prod` |
 | `REPO_MANIFEST_FOLDER` | The path to the Terraform manifests within the repository. | `snappass/resource` |
 | `SNAPPASS_SUBDOMAIN` | The base subdomain for the service (e.g., `snappass.eng`). | `snappass.eng` |
 | `TAG_REQUIRED_CUSTOMER` | Tag value for identifying the business owner. | `Ailevate` |
