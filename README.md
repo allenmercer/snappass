@@ -15,10 +15,10 @@ The solution is deployed to Azure and consists of the following key components:
 * **Azure Cache for Redis**: Provides a secure, ephemeral backend for storing secret data. It is secured via a **Private Endpoint** inside the VNet.
 * **Azure Key Vault**: Securely stores and manages all application secrets, such as the Redis access key and the application's secret key. The App Service accesses these secrets securely using its Managed Identity.
 * **Azure Virtual Network (VNet)**: Isolates all application components. The App Service is integrated into a subnet for secure internal communication.
-* **Azure DNS**: Manages the custom domain `snappass.eng.ailevate.com` and the managed TLS certificate.
+* **Azure DNS**: Manages the custom domains (e.g., `snappass.eng.ailevate.com` and `www.snappass.eng.ailevate.com`) and the managed TLS certificates.
 * **Azure Log Analytics**: A central workspace that collects diagnostic logs and metrics from all resources for monitoring and auditing.
 
-
+[Image of a cloud architecture diagram for Snappass]
 
 ---
 ## 🚀 Deployment
@@ -27,23 +27,23 @@ The entire infrastructure is deployed using the Azure DevOps pipeline defined in
 ### Prerequisites
 * An Azure subscription with permissions to create the resources defined in the architecture.
 * An Azure DevOps project with the required service connections configured.
-* An Azure DNS Zone for the custom domain (`ailevate.com` in this example).
+* An Azure DNS Zone for `ailevate.com`.
 
 ### Pipeline Variables
 Before running the pipeline, you must create a **Variable Group** in your Azure DevOps project's Library and link it to the `snappass` pipeline. It should contain the following variables:
 
 | Variable Name | Description | Sample Value |
 | --- | --- | --- |
+| `AZURE_PROJECT_LE` | The logical environment name, used for tagging. | `internal` |
 | `AZURE_PROJECT_NAME` | A short, unique name for the project (used for naming resources). | `snappass` |
 | `AZURE_RG_LOCATION` | The Azure region where resources will be deployed. | `eastus2` |
 | `AZURE_RG_NAME` | The name of the resource group for the application. | `rg-snappass-prod-eus2` |
 | `AZURE_SERVICE_SPN` | The name of the Azure DevOps Service Connection for deploying resources. | `azdo-svc-prod` |
-| `CUSTOM_HOSTNAME` | The fully qualified domain name for the service. | `snappass.eng.ailevate.com` |
-| `DNS_PARENT_DOMAIN` | The parent DNS zone where the CNAME record will be created. | `ailevate.com` |
-| `DNS_RG_NAME` | The name of the resource group where the parent DNS zone is located. | `rg-sre-dns-prod` |
+| `DNS_RG_NAME` | The name of the resource group where the `ailevate.com` DNS zone is located. | `rg-sre-dns-prod` |
 | `LOG_ANALYTICS_RG_NAME` | The RG name for the central Log Analytics Workspace. | `rg-sre-monitoring-prod` |
 | `LOG_ANALYTICS_WORKSPACE_NAME`| The name of the central Log Analytics Workspace. | `log-sre-monitoring-prod` |
 | `REPO_MANIFEST_FOLDER` | The path to the Terraform manifests within the repository. | `snappass/resource` |
+| `SNAPPASS_SUBDOMAIN` | The base subdomain for the service (e.g., `snappass.eng`). | `snappass.eng` |
 | `TAG_REQUIRED_CUSTOMER` | Tag value for identifying the business owner. | `Ailevate` |
 | `TAG_REQUIRED_WORKLOADTIER` | Tag value for identifying the service criticality. | `business-critical` |
 | `TERRAFORM_BACKEND_CONTAINER` | The Azure Storage container name for the Terraform state file. | `tfstate` |
