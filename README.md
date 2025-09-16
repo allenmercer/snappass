@@ -39,7 +39,7 @@ Before running the pipeline, you must create a **Variable Group** in your Azure 
 | `AZURE_RG_LOCATION` | The Azure region where resources will be deployed. | `eastus2` |
 | `AZURE_RG_NAME` | The name of the resource group for the application. | `rg-snappass-prod-eus2` |
 | `AZURE_SERVICE_SPN` | The name of the Azure DevOps Service Connection for deploying resources. | `azdo-svc-prod` |
-| `REPO_MANIFEST_FOLDER` | The path to the Terraform manifests within the repository. | `snappass/resource` |
+| `REPO_MANIFEST_FOLDER` | The path to the Terraform manifests within the repository. | `resource` |
 | `SNAPPASS_SUBDOMAIN` | The base subdomain for the service (e.g., `snappass.eng`). | `snappass.eng` |
 | `TAG_REQUIRED_CUSTOMER` | Tag value for identifying the business owner. | `Ailevate` |
 | `TAG_REQUIRED_WORKLOADTIER` | Tag value for identifying the service criticality. | `business-critical` |
