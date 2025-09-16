@@ -9,168 +9,59 @@ stages:
   - stage: deployAzureInfrastructure
     displayName: 'Deploy Azure Infrastructure'
     jobs:
-      - deployment: deployInfrastructure
-        displayName: 'Deploy and Configure Snappass'
-        pool:
-          name: 'global-aks' # Use your self-hosted or Microsoft-hosted agent pool
-        workspace:
-          clean: all
-        environment: '$(AZURE_PROJECT_NAME)'
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - checkout: self
-                  fetchDepth: 2
-
-                - task: ReplaceTokens@6
-                  displayName: 'Replace Terraform Variables'
-                  inputs:
-                    targetFiles: '$(REPO_MANIFEST_FOLDER)/terraform/*.tf'
-                    tokenPattern: custom
-                    tokenPrefix: '<-'
-                    tokenSuffix: '->'
-
-                - task: TerraformTaskV4@4
-                  displayName: 'Terraform Init'
-                  inputs:
-                    provider: 'azurerm'
-                    command: 'init'
-                    workingDirectory: '$(System.DefaultWorkingDirectory)/$(REPO_MANIFEST_FOLDER)/terraform'
-                    backendServiceArm: '$(TERRAFORM_BACKEND_SPN)'
-                    backendAzureRmResourceGroupName: '$(TERRAFORM_BACKEND_RG)'
-                    backendAzureRmStorageAccountName: '$(TERRAFORM_BACKEND_SA)'
-                    backendAzureRmContainerName: '$(TERRAFORM_BACKEND_CONTAINER)'
-                    backendAzureRmKey: '$(AZURE_PROJECT_NAME).tfstate'
-
-                - task: TerraformTaskV4@4
-                  displayName: 'Terraform Plan'
-                  inputs:
-                    provider: 'azurerm'
-                    command: 'plan'
-                    workingDirectory: '$(System.DefaultWorkingDirectory)/$(REPO_MANIFEST_FOLDER)/terraform'
-                    environmentServiceNameAzureRM: '$(AZURE_SERVICE_SPN)'
-                    commandOptions: '-out create-$(Build.BuildId).plan'
-
-                - task: TerraformTaskV4@4
-                  displayName: 'Terraform Apply'
-                  inputs:
-                    provider: 'azurerm'
-                    command: 'apply'
-                    workingDirectory: '$(System.DefaultWorkingDirectory)/$(REPO_MANIFEST_FOLDER)/terraform'
-                    environmentServiceNameAzureRM: '$(AZURE_SERVICE_SPN)'
-                    commandOptions: 'create-$(Build.BuildId).plan'
-
-                - task: AzureCLI@2
-                  displayName: 'Generate and Store Secrets in Key Vault'
-                  inputs:
-                    azureSubscription: '$(AZURE_SERVICE_SPN)'
-                    scriptType: 'bash'
-                    scriptLocation: 'inlineScript'
-                    inlineScript: |
-                      set -e
-                      KEY_VAULT_NAME="$(AZURE_PROJECT_NAME)-kv"
-                      REDIS_NAME="$(AZURE_PROJECT_NAME)-redis"
-                      SECRET_KEY_NAME="SNAPPASS-SECRET-KEY"
-                      REDIS_KEY_NAME="REDIS-ACCESS-KEY"
-
-                      echo "Checking for $SECRET_KEY_NAME in Key Vault: $KEY_VAULT_NAME"
-                      if az keyvault secret show --vault-name "$KEY_VAULT_NAME" --name "$SECRET_KEY_NAME" &>/dev/null; then
-                        echo "Secret '$SECRET_KEY_NAME' already exists. Skipping generation."
-                      else
-                        echo "Generating and storing secret: $SECRET_KEY_NAME"
-                        SECRET_VALUE=$(openssl rand -base64 64)
-                        az keyvault secret set --vault-name "$KEY_VAULT_NAME" --name "$SECRET_KEY_NAME" --value "$SECRET_VALUE"
-                      fi
-                      
-                      echo "Retrieving Redis Primary Key and storing in Key Vault."
-                      REDIS_KEY=$(az redis list-keys --name "$REDIS_NAME" --resource-group "$(AZURE_RG_NAME)" --query "primaryKey" -o tsv)
-                      az keyvault secret set --vault-name "$KEY_VAULT_NAME" --name "$REDIS_KEY_NAME" --value "$REDIS_KEY"
-
-                - task: AzureCLI@2
-                  displayName: 'Set App Service Settings with Key Vault References'
-                  inputs:
-                    azureSubscription: '$(AZURE_SERVICE_SPN)'
-                    scriptType: 'bash'
-                    scriptLocation: 'inlineScript'
-                    inlineScript: |
-                      set -e
-                      APP_NAME="$(AZURE_PROJECT_NAME)-lwa"
-                      KV_NAME="$(AZURE_PROJECT_NAME)-kv"
-                      REDIS_HOST="$(AZURE_PROJECT_NAME)-redis.redis.cache.windows.net"
-
-                      # Construct the Secret URIs
-                      SECRET_KEY_URI=$(az keyvault secret show --vault-name $KV_NAME --name "SNAPPASS-SECRET-KEY" --query "id" -o tsv)
-                      REDIS_KEY_URI=$(az keyvault secret show --vault-name $KV_NAME --name "REDIS-ACCESS-KEY" --query "id" -o tsv)
-
-                      # Construct the Redis URL using the Key Vault reference for the password
-                      REDIS_URL_SETTING="redis://:@Microsoft.KeyVault(SecretUri=${REDIS_KEY_URI})${REDIS_HOST}:6380"
-
-                      # Construct the primary Base URL for Snappass
-                      BASE_URL_SETTING="https://$(SNAPPASS_SUBDOMAIN).ailevate.com"
-
-                      echo "Updating App Service Application Settings..."
-                      az webapp config appsettings set -g "$(AZURE_RG_NAME)" -n "$APP_NAME" --settings \
-                        "BASE_URL=${BASE_URL_SETTING}" \
-                        "SECRET_KEY=@Microsoft.KeyVault(SecretUri=${SECRET_KEY_URI})" \
-                        "REDIS_URL=${REDIS_URL_SETTING}" \
-                        "WEBSITES_PORT=5000"
-
-  ############################################################
-  ### Stage to Destroy Azure Infrastructure                ###
-  ############################################################
-  - stage: destroyAzureInfrastructure
-    displayName: 'Destroy Azure Infrastructure'
-    jobs:
-      - deployment: destroyInfrastructure
-        displayName: 'Destroy Snappass'
-        condition: succeeded()
+      ### Job to Deploy Azure Infrastructure ###
+      - deployment: deployAzureInfrastructure
+        displayName: 'Deploy Azure Infrastructure'
         pool:
           name: 'global-aks'
         workspace:
           clean: all
+        # This is the environment in ADO where the results of this job will be displayed.
         environment: '$(AZURE_PROJECT_NAME)'
         strategy:
           runOnce:
             deploy:
               steps:
+                ### Task to Checkout GitHub Repository
                 - checkout: self
+                  #dispalyName: 'Checkout GitHub Repository'
                   fetchDepth: 2
-
+                ### Task to Replace Terraform Variables
                 - task: ReplaceTokens@6
-                  displayName: 'Replace Terraform Variables'
+                  displayName: Replace Terraform Variables
                   inputs:
-                    targetFiles: '$(REPO_MANIFEST_FOLDER)/terraform/*.tf'
+                    targetFiles: '$(REPO_MANIFEST_FOLDER)/terraform-manifests/*.tf'
                     tokenPattern: custom
                     tokenPrefix: '<-'
                     tokenSuffix: '->'
-
+                ### Task to Run Terraform Init
                 - task: TerraformTaskV4@4
-                  displayName: 'Terraform Init for Destroy'
+                  displayName: 'Run Terrafrom Init'
+                  #retryCountOnTaskFailure: 3
                   inputs:
                     provider: 'azurerm'
                     command: 'init'
-                    workingDirectory: '$(System.DefaultWorkingDirectory)/$(REPO_MANIFEST_FOLDER)/terraform'
+                    workingDirectory: '$(System.DefaultWorkingDirectory)/$(REPO_MANIFEST_FOLDER)/terraform-manifests'
                     backendServiceArm: '$(TERRAFORM_BACKEND_SPN)'
                     backendAzureRmResourceGroupName: '$(TERRAFORM_BACKEND_RG)'
                     backendAzureRmStorageAccountName: '$(TERRAFORM_BACKEND_SA)'
                     backendAzureRmContainerName: '$(TERRAFORM_BACKEND_CONTAINER)'
                     backendAzureRmKey: '$(AZURE_PROJECT_NAME).tfstate'
-
+                ### Task to Run Terraform Plan
                 - task: TerraformTaskV4@4
-                  displayName: 'Terraform Plan Destroy'
+                  displayName: 'Run Terrafrom Plan'
                   inputs:
-                    provider: 'azurerm'
                     command: 'plan'
-                    workingDirectory: '$(System.DefaultWorkingDirectory)/$(REPO_MANIFEST_FOLDER)/terraform'
+                    workingDirectory: '$(System.DefaultWorkingDirectory)/$(REPO_MANIFEST_FOLDER)/terraform-manifests'
+                    backendServiceArm: '$(TERRAFORM_BACKEND_SPN)'
                     environmentServiceNameAzureRM: '$(AZURE_SERVICE_SPN)'
-                    commandOptions: '-destroy -out destroy-$(Build.BuildId).plan'
-
+                    commandOptions: '-out create-$(Build.BuildId).plan'
+                ### Task to Run Terraform Apply
                 - task: TerraformTaskV4@4
-                  displayName: 'Terraform Apply Destroy'
+                  displayName: 'Run Terrafrom Apply'
                   inputs:
-                    provider: 'azurerm'
                     command: 'apply'
-                    workingDirectory: '$(System.DefaultWorkingDirectory)/$(REPO_MANIFEST_FOLDER)/terraform'
+                    workingDirectory: '$(System.DefaultWorkingDirectory)/$(REPO_MANIFEST_FOLDER)/terraform-manifests'
+                    backendServiceArm: '$(TERRAFORM_BACKEND_SPN)'
                     environmentServiceNameAzureRM: '$(AZURE_SERVICE_SPN)'
-                    commandOptions: 'destroy-$(Build.BuildId).plan'
+                    commandOptions: 'create-$(Build.BuildId).plan'
