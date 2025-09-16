@@ -17,7 +17,7 @@ stages:
         workspace:
           clean: all
         # This is the environment in ADO where the results of this job will be displayed.
-        environment: '$(AZURE_PROJECT_NAME)'
+        environment: 'snappass'
         strategy:
           runOnce:
             deploy:
@@ -34,6 +34,28 @@ stages:
                     tokenPattern: custom
                     tokenPrefix: '<-'
                     tokenSuffix: '->'
+                ### Task to Assign Resource Group Permissions
+                - task: AzureCLI@2
+                  displayName: 'Assign Resource Group Permissions'
+                  inputs:
+                    azureSubscription: '$(AZURE_SERVICE_SPN)'
+                    scriptType: 'bash'
+                    scriptLocation: 'inlineScript'
+                    inlineScript: |
+                      # Fail if any command fails
+                      set -e
+                      if $(az group exists --name "$AZURE_RG_NAME") .eq "true"; then
+                        # Get Role Assignment Status
+                        RG_ROLE_ASSIGNMENT=$(az role assignment list --resource-group "$AZURE_RG_NAME" --query "[?principalId=='ec55e7d4-ae11-4c67-a7bf-ce9c0085bbd0' && roleDefinitionName=='Owner'].roleDefinitionName" -o tsv)
+                        # If Resource Group permissions do not exist...
+                        if [[ "$RG_ROLE_ASSIGNMENT" != "Owner" ]]; then
+                          echo "Adding role assignment..."
+                          AZURE_RG_ID=$(az group show --name  $AZURE_RG_NAME | jq -r  '.id')
+                          az role assignment create --assignee-object-id ec55e7d4-ae11-4c67-a7bf-ce9c0085bbd0 --assignee-principal-type User --role Owner --scope $AZURE_RG_ID
+                        else
+                          echo "Role assignment already exists."
+                        fi
+                      fi
                 ### Task to Run Terraform Init
                 - task: TerraformTaskV4@4
                   displayName: 'Run Terrafrom Init'
@@ -65,3 +87,25 @@ stages:
                     backendServiceArm: '$(TERRAFORM_BACKEND_SPN)'
                     environmentServiceNameAzureRM: '$(AZURE_SERVICE_SPN)'
                     commandOptions: 'create-$(Build.BuildId).plan'
+                ### Task to Assign Resource Group Permissions
+                - task: AzureCLI@2
+                  displayName: 'Assign Resource Group Permissions'
+                  inputs:
+                    azureSubscription: '$(AZURE_SERVICE_SPN)'
+                    scriptType: 'bash'
+                    scriptLocation: 'inlineScript'
+                    inlineScript: |
+                      # Fail if any command fails
+                      set -e
+                      if $(az group exists --name "$AZURE_RG_NAME") .eq "true"; then
+                        # Get Role Assignment Status
+                        RG_ROLE_ASSIGNMENT=$(az role assignment list --resource-group "$AZURE_RG_NAME" --query "[?principalId=='ec55e7d4-ae11-4c67-a7bf-ce9c0085bbd0' && roleDefinitionName=='Owner'].roleDefinitionName" -o tsv)
+                        # If Resource Group permissions do not exist...
+                        if [[ "$RG_ROLE_ASSIGNMENT" != "Owner" ]]; then
+                          echo "Adding role assignment..."
+                          AZURE_RG_ID=$(az group show --name  $AZURE_RG_NAME | jq -r  '.id')
+                          az role assignment create --assignee-object-id ec55e7d4-ae11-4c67-a7bf-ce9c0085bbd0 --assignee-principal-type User --role Owner --scope $AZURE_RG_ID
+                        else
+                          echo "Role assignment already exists."
+                        fi
+                      fi
