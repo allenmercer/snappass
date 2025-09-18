@@ -1,0 +1,202 @@
+trigger:
+  - main
+pr: none
+
+variables:
+  ACR_NAME: 'ailevate'
+  IMAGE_NAME: 'echo'
+  IMAGE_TAG: '$(Build.BuildId)'
+
+stages:
+  ############################################################
+  ### Stage to Build Docker Image                          ###
+  ############################################################
+- stage: Build
+  displayName: 'Build Custom Echo Image'
+  jobs:
+  - job: BuildJob
+    pool:
+      name: 'global-aks'
+    steps:
+    - checkout: self
+      
+    - script: git clone --depth 1 https://github.com/pinterest/snappass.git source
+      displayName: 'Clone Official Snappass Repo'
+
+    # This task must run before we can run 'npm install'
+    - task: npmAuthenticate@0
+      displayName: 'Authenticate to Private NPM Registry'
+      inputs:
+        workingFile: 'source/.npmrc' # The file will be created in the next step
+
+    - script: |
+        # Change into the source directory for all subsequent commands
+        cd source
+
+        echo "Applying Ailevate customizations..."
+
+        # 1. Create the .npmrc file needed for authentication from the one in our repo
+        cp -vf ../customizations/.npmrc .
+
+        # 2. Create a minimal package.json to initialize npm
+        echo '{ "name": "temp-build", "private": true }' > package.json
+        
+        # 3. Install ONLY the design system package
+        npm install @ailevate/design-system
+
+        # 4. Copy the CSS from the package into the app's static folder
+        # NOTE: Confirm this exact path from your design system's package structure.
+        echo "Copying styles from design system package..."
+        cp -vf node_modules/@ailevate/design-system/dist/styles.css snappass/static/css/styles.css
+
+        # 5. Perform text replacement for branding
+        echo "Applying text branding..."
+        sed -i'' -e 's/SnapPass allows you to share secrets/$(NEW_APP_DESCRIPTION)/g' snappass/templates/index.html
+      displayName: 'Install Design System & Apply Customizations'
+
+    - task: Docker@2
+      displayName: 'Build Docker Image'
+      inputs:
+        command: build
+        containerRegistry: '$(ACR_SERVICE_CONNECTION)'
+        repository: '$(IMAGE_NAME)'
+        dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
+        tags: '$(IMAGE_TAG)'
+        buildContext: 'source'
+    
+    - task: CopyFiles@2
+      displayName: 'Copy Terraform Manifests'
+      inputs:
+        SourceFolder: '$(System.DefaultWorkingDirectory)/resource/terraform-manifests'
+        Contents: '**'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)/terraform'
+    
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Terraform Artifact'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/terraform'
+        ArtifactName: 'terraform-manifests'
+
+  ############################################################
+  ### Stage to Push Docker Image                           ###
+  ############################################################
+- stage: Push
+  displayName: 'Push Image to ACR'
+  dependsOn: Build
+  condition: succeeded()
+  jobs:
+  - job: PushJob
+    pool:
+      name: 'global-aks'
+    steps:
+    - task: Docker@2
+      displayName: 'Push Docker Image to ACR'
+      inputs:
+        command: push
+        containerRegistry: '$(ACR_SERVICE_CONNECTION)'
+        repository: '$(IMAGE_NAME)'
+        tags: '$(IMAGE_TAG)'
+
+ ############################################################
+  ### Stage to Deploy Azure Infrastructure                 ###
+  ############################################################
+- stage: deployAzureInfrastructure
+  displayName: 'Deploy Azure Infrastructure'
+  dependsOn: Push
+  jobs:
+  - deployment: deployAzureInfrastructure
+    displayName: 'Deploy Azure Infrastructure'
+    pool:
+      name: 'global-aks'
+    environment: '$(AZURE_PROJECT_NAME)'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+          - download: current
+            artifact: terraform-manifests
+          
+          - task: ReplaceTokens@6
+            displayName: 'Replace Terraform Variables'
+            inputs:
+              targetFiles: '$(Pipeline.Workspace)/terraform-manifests/*.tf'
+              tokenPattern: custom
+              tokenPrefix: '<-'
+              tokenSuffix: '->'
+
+          ### Task to Assign Resource Group Permissions
+          - task: AzureCLI@2
+            displayName: 'Assign Resource Group Permissions'
+            inputs:
+              azureSubscription: '$(AZURE_SERVICE_SPN)'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                # Fail if any command fails
+                set -e
+                if $(az group exists --name "$AZURE_RG_NAME") .eq "true"; then
+                  # Get Role Assignment Status
+                  RG_ROLE_ASSIGNMENT=$(az role assignment list --resource-group "$AZURE_RG_NAME" --query "[?principalId=='ec55e7d4-ae11-4c67-a7bf-ce9c0085bbd0' && roleDefinitionName=='Owner'].roleDefinitionName" -o tsv)
+                  # If Resource Group permissions do not exist...
+                  if [[ "$RG_ROLE_ASSIGNMENT" != "Owner" ]]; then
+                    echo "Adding role assignment..."
+                    AZURE_RG_ID=$(az group show --name  $AZURE_RG_NAME | jq -r  '.id')
+                    az role assignment create --assignee-object-id ec55e7d4-ae11-4c67-a7bf-ce9c0085bbd0 --assignee-principal-type User --role Owner --scope $AZURE_RG_ID
+                  else
+                    echo "Role assignment already exists."
+                  fi
+                fi
+
+          - task: TerraformTaskV4@4
+            displayName: 'Run Terrafrom Init'
+            inputs:
+              provider: 'azurerm'
+              command: 'init'
+              workingDirectory: '$(Pipeline.Workspace)/terraform-manifests'
+              backendServiceArm: '$(TERRAFORM_BACKEND_SPN)'
+              backendAzureRmResourceGroupName: '$(TERRAFORM_BACKEND_RG)'
+              backendAzureRmStorageAccountName: '$(TERRAFORM_BACKEND_SA)'
+              backendAzureRmContainerName: '$(TERRAFORM_BACKEND_CONTAINER)'
+              backendAzureRmKey: '$(AZURE_PROJECT_NAME).tfstate'
+
+          - task: TerraformTaskV4@4
+            displayName: 'Run Terrafrom Plan'
+            inputs:
+              provider: 'azurerm'
+              command: 'plan'
+              workingDirectory: '$(Pipeline.Workspace)/terraform-manifests'
+              environmentServiceNameAzureRM: '$(AZURE_SERVICE_SPN)'
+              commandOptions: '-out create-$(Build.BuildId).plan'
+
+          - task: TerraformTaskV4@4
+            displayName: 'Run Terrafrom Apply'
+            inputs:
+              provider: 'azurerm'
+              command: 'apply'
+              workingDirectory: '$(Pipeline.Workspace)/terraform-manifests'
+              environmentServiceNameAzureRM: '$(AZURE_SERVICE_SPN)'
+              commandOptions: 'create-$(Build.BuildId).plan'
+
+          ### Task to Assign Resource Group Permissions
+          - task: AzureCLI@2
+            displayName: 'Assign Resource Group Permissions'
+            inputs:
+              azureSubscription: '$(AZURE_SERVICE_SPN)'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                # Fail if any command fails
+                set -e
+                if $(az group exists --name "$AZURE_RG_NAME") .eq "true"; then
+                  # Get Role Assignment Status
+                  RG_ROLE_ASSIGNMENT=$(az role assignment list --resource-group "$AZURE_RG_NAME" --query "[?principalId=='ec55e7d4-ae11-4c67-a7bf-ce9c0085bbd0' && roleDefinitionName=='Owner'].roleDefinitionName" -o tsv)
+                  # If Resource Group permissions do not exist...
+                  if [[ "$RG_ROLE_ASSIGNMENT" != "Owner" ]]; then
+                    echo "Adding role assignment..."
+                    AZURE_RG_ID=$(az group show --name  $AZURE_RG_NAME | jq -r  '.id')
+                    az role assignment create --assignee-object-id ec55e7d4-ae11-4c67-a7bf-ce9c0085bbd0 --assignee-principal-type User --role Owner --scope $AZURE_RG_ID
+                  else
+                    echo "Role assignment already exists."
+                  fi
+                fi
