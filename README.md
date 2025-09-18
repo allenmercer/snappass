@@ -2,7 +2,7 @@
 Ailevate Echo is a secure, ephemeral secret sharing service, hosted and managed entirely by Ailevate. It allows employees to safely transmit secrets (e.g., API tokens, credentials) using one-time links, preventing sensitive data from being exposed in email or chat logs.
 
 ## 📌 Overview
-This project deploys a private, production-ready instance of Ailevate Echo. The deployment is fully automated using Infrastructure as Code (Terraform) and a CI/CD pipeline (Azure DevOps) that builds a custom, Ailevate-branded version of the underlying Snappass application.
+This project deploys a private, production-ready instance of Ailevate Echo. The deployment is fully automated using Infrastructure as Code (Terraform) and a CI/CD pipeline (Azure DevOps). The pipeline builds a custom Docker image that is branded using styles pulled directly from the official `@ailevate/design-system` NPM package.
 
 * ✅ **Secure**: Secrets expire after the first view or a configurable time-to-live (TTL).
 * ✅ **Auditable**: All significant events are logged to a central Log Analytics workspace for security monitoring.
