@@ -82,12 +82,12 @@ stages:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)/terraform'
         ArtifactName: 'terraform-manifests'
 
- ############################################################
-  ### Stage to Deploy Azure Infrastructure                 ###
-  ############################################################
+############################################################
+### Stage to Deploy Azure Infrastructure                 ###
+############################################################
 - stage: deployAzureInfrastructure
   displayName: 'Deploy Azure Infrastructure'
-  dependsOn: Push
+  dependsOn: Build
   jobs:
   - deployment: deployAzureInfrastructure
     displayName: 'Deploy Azure Infrastructure'
