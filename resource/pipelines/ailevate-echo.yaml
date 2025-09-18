@@ -60,9 +60,9 @@ stages:
       displayName: 'Install Design System & Apply Customizations'
 
     - task: Docker@2
-      displayName: 'Build Docker Image'
+      displayName: 'Build and Push Docker Image'
       inputs:
-        command: build
+        command: buildAndPush # This command builds and then pushes in one step
         containerRegistry: '$(ACR_SERVICE_CONNECTION)'
         repository: '$(IMAGE_NAME)'
         dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
@@ -81,26 +81,6 @@ stages:
       inputs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)/terraform'
         ArtifactName: 'terraform-manifests'
-
-  ############################################################
-  ### Stage to Push Docker Image                           ###
-  ############################################################
-- stage: Push
-  displayName: 'Push Image to ACR'
-  dependsOn: Build
-  condition: succeeded()
-  jobs:
-  - job: PushJob
-    pool:
-      vmImage: $(VM_IMAGE)
-    steps:
-    - task: Docker@2
-      displayName: 'Push Docker Image to ACR'
-      inputs:
-        command: push
-        containerRegistry: '$(ACR_SERVICE_CONNECTION)'
-        repository: '$(IMAGE_NAME)'
-        tags: '$(IMAGE_TAG)'
 
  ############################################################
   ### Stage to Deploy Azure Infrastructure                 ###
