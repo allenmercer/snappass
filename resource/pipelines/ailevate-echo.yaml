@@ -6,6 +6,7 @@ variables:
   ACR_NAME: 'ailevate'
   IMAGE_NAME: 'echo'
   IMAGE_TAG: '$(Build.BuildId)'
+  VM_IMAGE: 'ubuntu-latest'
 
 stages:
   ############################################################
@@ -16,7 +17,7 @@ stages:
   jobs:
   - job: BuildJob
     pool:
-      name: 'global-aks'
+      vmImage: $(VM_IMAGE)
     steps:
     - checkout: self
       
@@ -91,7 +92,7 @@ stages:
   jobs:
   - job: PushJob
     pool:
-      name: 'global-aks'
+      vmImage: $(VM_IMAGE)
     steps:
     - task: Docker@2
       displayName: 'Push Docker Image to ACR'
