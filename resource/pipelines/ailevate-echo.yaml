@@ -12,10 +12,11 @@ stages:
   ############################################################
   ### Stage to Build Docker Image                          ###
   ############################################################
-- stage: Build
-  displayName: 'Build Custom Echo Image'
+- stage: BuildAndPush # CHANGED: Combined Build and Push stages
+  displayName: 'Build and Push Docker Image'
   jobs:
-  - job: BuildJob
+  - job: BuildAndPushJob
+    displayName: 'Build and Push'
     pool:
       vmImage: $(VM_IMAGE)
     steps:
@@ -25,44 +26,17 @@ stages:
       displayName: 'Clone Official Snappass Repo'
 
     - script: |
-        echo "Adding necessary npm files..."
-
-        # 1. Create the .npmrc file needed for authentication from the one in our repo
-        cp -vf customizations/.npmrc source
-
-        # 2. Create a minimal package.json to initialize npm
-        echo '{ "name": "temp-build", "private": true }' > source/package.json
-      displayName: 'Add Necessary npm Files'
-
-    # This task must run before we can run 'npm install'
-    - task: npmAuthenticate@0
-      displayName: 'Authenticate to Private NPM Registry'
-      inputs:
-        workingFile: 'source/.npmrc'
-
-    - script: |
-        # Change into the source directory for all subsequent commands
-        cd source
-
         echo "Applying Ailevate customizations..."
-
-        # 3. Install ONLY the design system package
-        npm install @ailevate/design-system
-
-        # 4. Copy the CSS from the package into the app's static folder
-        # NOTE: Confirm this exact path from your design system's package structure.
-        echo "Copying styles from design system package..."
-        cp -vf node_modules/@ailevate/design-system/dist/styles.css snappass/static/css/styles.css
-
-        # 5. Perform text replacement for branding
-        echo "Applying text branding..."
-        sed -i'' -e 's/SnapPass allows you to share secrets/$(NEW_APP_DESCRIPTION)/g' snappass/templates/set_password.html
-      displayName: 'Install Design System & Apply Customizations'
+        mkdir -p source/snappass/static/img
+        cp -vf customizations/ailevate-logo-blue-orange-rev.svg source/snappass/static/img/ailevate-logo-blue-orange-rev.svg
+        cp -vf customizations/styles.css source/snappass/static/css/styles.css
+        cp -Rvf customizations/templates/* source/snappass/templates/
+      displayName: 'Apply Custom Templates, Styles, & Assets'
 
     - task: Docker@2
       displayName: 'Build and Push Docker Image'
       inputs:
-        command: buildAndPush # This command builds and then pushes in one step
+        command: buildAndPush # CHANGED: Using the combined command
         containerRegistry: '$(ACR_SERVICE_CONNECTION)'
         repository: '$(IMAGE_NAME)'
         dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
@@ -87,7 +61,7 @@ stages:
 ############################################################
 - stage: deployAzureInfrastructure
   displayName: 'Deploy Azure Infrastructure'
-  dependsOn: Build
+  dependsOn: BuildAndPush # CHANGED: Depends on the new combined stage
   jobs:
   - deployment: deployAzureInfrastructure
     displayName: 'Deploy Azure Infrastructure'

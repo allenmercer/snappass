@@ -1,0 +1,139 @@
+/*
+ * Ailevate Echo Custom Styles
+ * Based on the branding from ailevate.com
+ */
+
+:root {
+  --ailevate-blue-primary: #0b2949;
+  --ailevate-blue-hover: #1c4a7e;
+  --ailevate-text-primary: #212529;
+  --ailevate-text-secondary: #6c757d;
+  --ailevate-background-light: #f8f9fa;
+  --ailevate-border-color: #dee2e6;
+  --ailevate-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+body {
+  font-family: var(--ailevate-font-family);
+  background-color: var(--ailevate-background-light);
+  color: var(--ailevate-text-primary);
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.header {
+  padding: 1.5rem 0;
+  background-color: #ffffff;
+  border-bottom: 1px solid var(--ailevate-border-color);
+}
+
+.header-logo-img {
+  height: 34px;
+  width: auto;
+  vertical-align: middle;
+}
+
+.main-content {
+  flex-grow: 1;
+  padding: 3rem 0;
+}
+
+.footer {
+  padding: 1.5rem 0;
+  color: var(--ailevate-text-secondary);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.content-box {
+  background-color: #ffffff;
+  border: 1px solid var(--ailevate-border-color);
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.content-box h1 {
+  margin-top: 0;
+  font-size: 2rem;
+}
+
+.slogan {
+  color: var(--ailevate-text-secondary);
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+}
+
+#create-form textarea, .secret-display {
+  width: 100%;
+  min-height: 150px;
+  padding: 0.75rem;
+  border: 1px solid var(--ailevate-border-color);
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  box-sizing: border-box;
+}
+
+.controls {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1rem;
+}
+
+.ttl-select, .password-input {
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid var(--ailevate-border-color);
+  background-color: #fff;
+}
+
+.btn-primary {
+  background-color: var(--ailevate-blue-primary);
+  border: 1px solid var(--ailevate-blue-primary);
+  color: #ffffff;
+  font-weight: 600;
+  border-radius: 6px;
+  padding: 10px 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.btn-primary:hover {
+  background-color: var(--ailevate-blue-hover);
+  border-color: var(--ailevate-blue-hover);
+}
+
+.link-box {
+  display: flex;
+  gap: 0.5rem;
+}
+.link-box input {
+  flex-grow: 1;
+  padding: 10px;
+  border: 1px solid var(--ailevate-border-color);
+  border-radius: 6px;
+  font-size: 1rem;
+  background-color: #e9ecef;
+}
+
+.error-message {
+    color: #a94442;
+    background-color: #f2dede;
+    border: 1px solid #ebccd1;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 20px;
+}

@@ -2,7 +2,7 @@
 Ailevate Echo is a secure, ephemeral secret sharing service, hosted and managed entirely by Ailevate. It allows employees to safely transmit secrets (e.g., API tokens, credentials) using one-time links, preventing sensitive data from being exposed in email or chat logs.
 
 ## 📌 Overview
-This project deploys a private, production-ready instance of Ailevate Echo. The deployment is fully automated using Infrastructure as Code (Terraform) and a CI/CD pipeline (Azure DevOps). The pipeline builds a custom Docker image that is branded using styles pulled directly from the official `@ailevate/design-system` NPM package.
+This project deploys a private, production-ready instance of Ailevate Echo. The deployment is fully automated using Infrastructure as Code (Terraform) and a CI/CD pipeline (Azure DevOps) that builds a custom, Ailevate-branded version of the underlying Snappass application.
 
 * ✅ **Secure**: Secrets expire after the first view or a configurable time-to-live (TTL).
 * ✅ **Auditable**: All significant events are logged to a central Log Analytics workspace for security monitoring.
@@ -34,14 +34,13 @@ Before running the pipeline, create a **Variable Group** in your Azure DevOps pr
 
 | Variable Name | Description | Sample Value |
 | --- | --- | --- |
-| `ADO_PAT_FOR_PACKAGING` | A secret PAT with Packaging (Read) scope for the NPM feed. | `your-secret-pat` |
+| `ACR_SERVICE_CONNECTION` | The ADO Service Connection for the Docker Registry. | `AilevateACRServiceConnection` |
 | `AZURE_PROJECT_LE` | The logical environment name for tagging. | `internal` |
 | `AZURE_PROJECT_NAME` | A short name for the project (used for resource naming). | `echo` |
 | `AZURE_RG_LOCATION` | The Azure region for deployment. | `eastus2` |
 | `AZURE_RG_NAME` | The name of the application resource group. | `rg-echo-prod-eus2` |
 | `AZURE_SERVICE_SPN` | The ADO Service Connection for deploying resources. | `azdo-svc-prod` |
-| `ACR_SERVICE_CONNECTION` | The ADO Service Connection for the Docker Registry. | `AilevateACRServiceConnection` |
-| `NEW_APP_DESCRIPTION` | The branded text to replace the default Snappass description. | `Ailevate Echo allows you to securely share information` |
+| `NEW_APP_DESCRIPTION` | The branded text displayed on the main page. | `Ailevate Echo allows you to securely share information.` |
 | `REPO_MANIFEST_FOLDER` | The path to the Terraform manifests. | `resource` |
 | `SNAPPASS_SUBDOMAIN` | The base subdomain for the service. | `echo.eng` |
 | `TAG_REQUIRED_CUSTOMER` | Tag value for the business owner. | `Ailevate` |
