@@ -55,7 +55,7 @@ stages:
 
         # 5. Perform text replacement for branding
         echo "Applying text branding..."
-        sed -i'' -e 's/SnapPass allows you to share secrets/$(NEW_APP_DESCRIPTION)/g' snappass/templates/index.html
+        sed -i'' -e 's/SnapPass allows you to share secrets/$(NEW_APP_DESCRIPTION)/g' snappass/templates/set_password.html
       displayName: 'Install Design System & Apply Customizations'
 
     - task: Docker@2
