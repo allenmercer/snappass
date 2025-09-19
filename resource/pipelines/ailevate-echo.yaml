@@ -28,13 +28,15 @@ stages:
     - script: |
         echo "Applying Ailevate customizations..."
         
+        # Create a directory for images
         mkdir -p source/snappass/static/img
-        
-        cp -vf customizations/ailevate-logo-blue-orange-rev.svg source/snappass/static/img/ailevate-logo-blue-orange-rev.svg
-        
-        # CORRECTED: Use the new filename and the correct destination path
-        cp -vf customizations/custom.css source/snappass/static/snappass/css/custom.css
 
+        # Copy the logo and the new background image
+        cp -vf customizations/ailevate-logo-blue-orange-rev.svg source/snappass/static/img/
+        cp -vf customizations/hero-bg-cc.jpg source/snappass/static/img/
+        
+        # Copy our custom stylesheet and all HTML templates
+        cp -vf customizations/custom.css source/snappass/static/snappass/css/
         cp -Rvf customizations/templates/* source/snappass/templates/
       displayName: 'Apply Custom Templates, Styles, & Assets'
 
