@@ -1,0 +1,124 @@
+/* Body and Background */
+#body {
+#  margin: 0;
+#  background-image: url('../../img/hero-bg-cc.jpg');
+#  background-size: cover;
+#  background-position: center center;
+#  background-repeat: no-repeat;
+#  min-height: 100vh;
+#}
+
+/* Update body to use flexbox for sticky footer */
+body {
+  margin: 0;
+  background-image: url('../../img/hero-bg-cc.jpg');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Update main-content to fill available space */
+.main-content {
+  padding-top: 60px;
+  flex-grow: 1; /* This makes the content area expand, pushing the footer down */
+  color: #fff;
+}
+
+/* New styles for the footer */
+.site-footer {
+  padding: 20px 0;
+  text-align: center;
+  color: #ccc; /* Light grey for less emphasis */
+  font-size: 14px;
+}
+
+/* Site Logo - Absolutely Positioned */
+.site-logo {
+  position: absolute;
+  top: 80px;    /* Distance from the top of the screen */
+  left: 50px;   /* Distance from the far left of the screen */
+  z-index: 100; /* Keeps the logo on top of other elements */
+}
+
+.site-logo img {
+  width: 210px; /* 150px * 1.4 = 210px */
+  height: auto;
+}
+
+/* Transparent Navbar */
+.navbar-default {
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+.navbar-default .navbar-brand {
+    color: #fff;
+}
+.navbar-default .navbar-brand:hover,
+.navbar-default .navbar-brand:focus {
+    color: lightgrey;
+}
+
+/* Main Content Area */
+.main-content {
+  padding-top: 60px; /* Pushes the content down to make space */
+}
+
+/* Center the H1 ("Set Secret") within the main content area */
+#.main-content h1 {
+#  color: #fff;
+#  text-align: center;
+#  margin-bottom: 30px;
+#}
+
+/*
+ * Override Bootstrap's default button styles
+ */
+
+/* Optional: Adjust all buttons for a more modern look */
+.btn {
+  border-radius: 8px; /* Softer, rounded corners for all buttons */
+  transition: background-color 0.3s ease, border-color 0.3s ease; /* Smooth transitions */
+}
+
+/* Override the primary button's default blue color */
+.btn-primary {
+  background-color: #3a35d1;
+  border-color: #3a35d1; /* Match the border to the background */
+}
+
+#.main-content p {
+#  color: #fff;
+#}
+
+/* Change the primary button to orange on hover or focus */
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+  background-color: #f39c12;
+  border-color: #f39c12;
+}
+
+
+/* Original */
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+.break-word {
+    word-wrap: break-word;
+}
+
+.margin-bottom-10 {
+    margin-bottom: 10px;
+}
+
+input[readonly].readonly-text {
+    background-color: #fff;
+    cursor: text;
+}
