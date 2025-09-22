@@ -119,6 +119,7 @@ stages:
                     echo "Role assignment already exists."
                   fi
                 fi
+                echo $(ls -al)
 
           - task: TerraformTaskV4@4
             displayName: 'Run Terrafrom Init'
