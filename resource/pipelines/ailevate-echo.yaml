@@ -12,7 +12,7 @@ stages:
   ############################################################
   ### Stage to Build Docker Image                          ###
   ############################################################
-- stage: BuildAndPush # CHANGED: Combined Build and Push stages
+- stage: BuildAndPush
   displayName: 'Build and Push Docker Image'
   jobs:
   - job: BuildAndPushJob
@@ -31,13 +31,19 @@ stages:
         # Create a directory for images
         mkdir -p source/snappass/static/img
 
-        # Copy the logo and the new background image
-        cp -vf customizations/ailevate-logo-blue-orange-rev.svg source/snappass/static/img/
-        cp -vf customizations/hero-bg-cc.jpg source/snappass/static/img/
+        # Copy the logo, background, stylesheet, and all HTML templates
+        cp -Rv customizations/img/* source/snappass/static/img/
+        cat customizations/css/custom.css >> source/snappass/static/snappass/css/custom.css
+        cp -Rv customizations/templates/* source/snappass/templates/
         
-        # Copy our custom stylesheet and all HTML templates
-        cp -vf customizations/custom.css source/snappass/static/snappass/css/
-        cp -Rvf customizations/templates/* source/snappass/templates/
+        # Replace the SnapPass text in set_password
+        # This is one of two places where the end user would see the word SnapPass.
+        # The second place is the Redis prefix.
+        sed -i 's/SnapPass/Ailevate Echo/g' source/snappass/templates/set_password.html
+
+        # Replace all instances of the word snappass or snap pass, case insensitive, from any template to prevent leakage.
+        sed -i '/STATIC_URL/! s/snappass/ailevateecho/I' source/snappass/templates/*
+        sed -i '/STATIC_URL/! s/snap pass/ailevate echo/I' source/snappass/templates/*
       displayName: 'Apply Custom Templates, Styles, & Assets'
 
     - task: Docker@2

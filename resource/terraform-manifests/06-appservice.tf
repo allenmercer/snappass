@@ -16,24 +16,17 @@ resource "azurerm_linux_web_app" "lwa" {
   service_plan_id     = azurerm_service_plan.asp.id
   https_only          = true
   tags                = local.tags
-
   identity {
     type = "SystemAssigned"
   }
-
   virtual_network_subnet_id = azurerm_subnet.app_snet.id
-
   site_config {
     always_on  = true
     ftps_state = "Disabled"
-
     application_stack {
-      docker_image_name   = "pinterest/snappass:latest"
-      docker_registry_url = "https://index.docker.io"
+      # This points to the image built and pushed by the pipeline
+      docker_image     = "ailevate.azurecr.io/echo"
+      docker_image_tag = "$(Build.BuildId)" 
     }
-  }
-
-  app_settings = {
-    "DOCKER_ENABLE_CI" = "true"
   }
 }

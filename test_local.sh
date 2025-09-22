@@ -24,6 +24,10 @@ cp -Rv customizations/templates/* source/snappass/templates/
 # Replace SnapPass in set_password
 sed -i '' 's/SnapPass/Ailevate Echo/g' source/snappass/templates/set_password.html
 
+# Replace all instances of the word snappass or snap pass, case insensitive, from any template to prevent leakage.
+sed -i '' '/STATIC_URL/! s/snappass/ailevateecho/I' source/snappass/templates/*
+sed -i '' '/STATIC_URL/! s/snap pass/ailevate echo/I' source/snappass/templates/*
+
 echo "--- 4. Building and running containers with Docker Compose..."
 # Build the new image and start the echo and redis containers in the background
 docker-compose -f docker-compose.local up --build -d
@@ -32,5 +36,5 @@ echo ""
 echo "✅ Success! Ailevate Echo is running."
 echo "   View it in your browser at http://localhost:8080"
 echo ""
-echo "   Use 'docker-compose logs -f echo' to see the application logs."
-echo "   Use 'docker-compose down' to stop the containers."
+echo "   Use 'docker logs -f snappass-echo-1' to see the application logs."
+echo "   Use 'docker-compose -f docker-compose.local down' to stop the containers."

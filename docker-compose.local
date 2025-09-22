@@ -3,7 +3,7 @@ services:
   echo:
     build:
       context: ./source # Use the customized source code from the 'source' folder
-      dockerfile: ./Dockerfile # Use the Dockerfile from our repo's root
+      dockerfile: ../Dockerfile # Use the Dockerfile from our repo's root
     image: echo_local # Give the locally built image a unique name
     platform: linux/amd64
     ports:

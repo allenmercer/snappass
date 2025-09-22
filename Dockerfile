@@ -1,23 +1,30 @@
-# Use the official Python slim image as the base
 FROM python:3.8-slim
 
-# Set the working directory in the container
-WORKDIR /app
+ENV APP_DIR=/usr/src/snappass
 
-# Copy the requirements file and install dependencies
-# This file will come from the cloned Snappass repo
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN groupadd -r snappass && \
+    useradd -r -g snappass snappass && \
+    mkdir -p $APP_DIR
+
+WORKDIR $APP_DIR
+
+COPY ["setup.py", "requirements.txt", "MANIFEST.in", "README.rst", "AUTHORS.rst", "$APP_DIR/"]
+COPY ["./snappass", "$APP_DIR/snappass"]
+
+RUN pip install -r requirements.txt
 
 # Install the gunicorn web server for production use
 RUN pip install --no-cache-dir gunicorn
 
-# Copy the rest of the application source code
-# The pipeline will have already placed our custom templates and styles into this source
-COPY . .
+RUN pybabel compile -d snappass/translations
 
-# Expose the port the app runs on
+RUN python setup.py install && \
+    chown -R snappass $APP_DIR && \
+    chgrp -R snappass $APP_DIR
+
+USER snappass
+
+# Default Flask port
 EXPOSE 5000
 
-# The command to run the application using gunicorn, pointing to the correct entrypoint
-CMD ["gunicorn", "-b", "0.0.0.0:5000", "snappass.main:app"]
+CMD ["gunicorn", "-b", "0.0.0.0:5000", "--access-logfile", "-", "--error-logfile", "-", "snappass.main:app"]
