@@ -30,3 +30,14 @@ resource "azurerm_linux_web_app" "lwa" {
     }
   }
 }
+
+data "azurerm_container_registry" "acr" {
+  name                = "ailevate"
+  resource_group_name = "sre-store"
+}
+
+resource "azurerm_role_assignment" "app_to_acr" {
+  scope                = data.azurerm_container_registry.acr.id
+  role_definition_name = "AcrPull"
+  principal_id         = azurerm_linux_web_app.lwa.identity[0].principal_id
+}
