@@ -31,9 +31,7 @@ resource "azurerm_linux_web_app" "lwa" {
     }
   }
   app_settings = {
-    DOCKER_REGISTRY_URL      = "https://${data.azurerm_container_registry.acr.login_server}"
-    DOCKER_REGISTRY_USERNAME = data.azurerm_container_registry.acr.admin_username
-    DOCKER_REGISTRY_PASSWORD = data.azurerm_container_registry.acr.admin_password
+    WEBSITE_PULL_IMAGE_OVER_VNET = true
   }
 }
 
