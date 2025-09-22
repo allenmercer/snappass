@@ -29,11 +29,11 @@ resource "azurerm_linux_web_app" "lwa" {
       docker_image_name   = "echo:${var.image_tag}"
       docker_registry_url = "https://ailevate.azurecr.io"
     }
-    app_settings = {
-      DOCKER_REGISTRY_SERVER_URL      = "https://${data.azurerm_container_registry.acr.login_server}"
-      DOCKER_REGISTRY_SERVER_USERNAME = azurerm_container_registry.acr.admin_username
-      DOCKER_REGISTRY_SERVER_PASSWORD = azurerm_container_registry.acr.admin_password
-    }
+  }
+  app_settings = {
+    DOCKER_REGISTRY_SERVER_URL      = "https://${data.azurerm_container_registry.acr.login_server}"
+    DOCKER_REGISTRY_SERVER_USERNAME = azurerm_container_registry.acr.admin_username
+    DOCKER_REGISTRY_SERVER_PASSWORD = azurerm_container_registry.acr.admin_password
   }
 }
 
