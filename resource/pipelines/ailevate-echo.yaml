@@ -130,7 +130,7 @@ stages:
               backendAzureRmResourceGroupName: '$(TERRAFORM_BACKEND_RG)'
               backendAzureRmStorageAccountName: '$(TERRAFORM_BACKEND_SA)'
               backendAzureRmContainerName: '$(TERRAFORM_BACKEND_CONTAINER)'
-              backendAzureRmKey: '$(AZURE_PROJECT_NAME)01.tfstate'
+              backendAzureRmKey: '$(AZURE_PROJECT_NAME).tfstate'
 
           - task: TerraformTaskV4@4
             displayName: 'Run Terrafrom Plan'
