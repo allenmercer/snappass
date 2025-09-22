@@ -37,8 +37,17 @@ data "azurerm_container_registry" "acr" {
   resource_group_name = "sre-store"
 }
 
-resource "azurerm_role_assignment" "app_to_acr" {
-  scope                = data.azurerm_container_registry.acr.id
-  role_definition_name = "AcrPull"
-  principal_id         = azurerm_linux_web_app.lwa.identity[0].principal_id
+# This resource creates a 30-second delay after the App Service is created.
+resource "time_sleep" "wait_for_iam_propagation" {
+  depends_on = [azurerm_linux_web_app.lwa]
+
+  create_duration = "30s"
 }
+
+#resource "azurerm_role_assignment" "app_to_acr" {
+#  depends_on = [time_sleep.wait_for_iam_propagation]
+#
+#  scope                = data.azurerm_container_registry.acr.id
+#  role_definition_name = "AcrPull"
+#  principal_id         = azurerm_linux_web_app.lwa.identity[0].principal_id
+#}
