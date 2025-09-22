@@ -27,7 +27,7 @@ resource "azurerm_linux_web_app" "lwa" {
     application_stack {
       # This points to the image built and pushed by the pipeline
       docker_image_name   = "echo:${var.image_tag}"
-      docker_registry_url = "https://ailevate.azurecr.io"
+      docker_registry_url = "https://${data.azurerm_container_registry.acr.login_server}"
     }
   }
   app_settings = {
