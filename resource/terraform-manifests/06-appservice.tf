@@ -23,12 +23,12 @@ resource "azurerm_linux_web_app" "lwa" {
   site_config {
     always_on  = true
     ftps_state = "Disabled"
-    linux_fx_version = "DOCKER|ailevate.azurecr.io/echo:${var.image_tag}"
-    #application_stack {
-    #  # This points to the image built and pushed by the pipeline
-    #  docker_image_name   = "echo:${var.image_tag}"
-    #  docker_registry_url = "https://ailevate.azurecr.io"
-    #}
+    #linux_fx_version = "DOCKER|ailevate.azurecr.io/echo:${var.image_tag}"
+    application_stack {
+      # This points to the image built and pushed by the pipeline
+      docker_image_name   = "echo:${var.image_tag}"
+      docker_registry_url = "https://ailevate.azurecr.io"
+    }
   }
 }
 
