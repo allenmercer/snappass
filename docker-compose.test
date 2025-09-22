@@ -1,0 +1,19 @@
+services:
+  # This is your Ailevate Echo application service
+  echo:
+    image: ailevate.azurecr.io/echo:19248
+    platform: linux/amd64
+    ports:
+      - "8080:5000"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - SECRET_KEY=${SECRET_KEY}
+      - BASE_URL=http://localhost:8080
+      - DEBUG=true # Enable debug mode for better local error messages
+      - REDIS_PREFIX=ailevateecho
+    depends_on:
+      - redis
+
+  # This is a local Redis database service that 'echo' will connect to
+  redis:
+    image: redis:alpine
