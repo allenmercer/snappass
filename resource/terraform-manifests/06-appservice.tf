@@ -25,7 +25,7 @@ resource "azurerm_linux_web_app" "lwa" {
     ftps_state = "Disabled"
     application_stack {
       # This points to the image built and pushed by the pipeline
-      docker_image_name = "ailevate.azurecr.io/echo:$(Build.BuildId)"
+      docker_image_name = "ailevate.azurecr.io/echo:${var.image_tag}"
     }
   }
 }

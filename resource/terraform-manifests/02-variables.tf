@@ -67,6 +67,10 @@ variable "customer" {
   type = string
 }
 
+variable "image_tag" {
+  description = "The Docker image tag to deploy, passed from the pipeline."
+  type        = string
+}
 
 # Locals Block
 

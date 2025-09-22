@@ -140,7 +140,7 @@ stages:
               command: 'plan'
               workingDirectory: '$(Pipeline.Workspace)/terraform-manifests'
               environmentServiceNameAzureRM: '$(AZURE_SERVICE_SPN)'
-              commandOptions: '-out create-$(Build.BuildId).plan'
+              commandOptions: '-var="image_tag=$(Build.BuildId)" -out create-$(Build.BuildId).plan'
 
           - task: TerraformTaskV4@4
             displayName: 'Run Terrafrom Apply'
