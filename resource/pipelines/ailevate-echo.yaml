@@ -126,6 +126,7 @@ stages:
             inputs:
               provider: 'azurerm'
               command: 'init'
+              commandOptions: '-reconfigure'
               workingDirectory: '$(Pipeline.Workspace)/terraform-manifests'
               backendServiceArm: '$(TERRAFORM_BACKEND_SPN)'
               backendAzureRmResourceGroupName: '$(TERRAFORM_BACKEND_RG)'
