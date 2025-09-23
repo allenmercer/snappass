@@ -69,6 +69,7 @@ variable "customer" {
 
 variable "image_tag" {
   description = "The Docker image tag to deploy, passed from the pipeline."
+  default = ""
   type        = string
 }
 
