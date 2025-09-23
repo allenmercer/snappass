@@ -182,6 +182,9 @@ stages:
                   else
                     echo "Role assignment already exists."
                   fi
+                  PRINCIPAL_ID=$(az webapp identity show -g allen-playground01 -n echopgab-lwa --query principalId --output tsv)
+                  REGISTRY_ID=$(az acr show -g sre-store -n ailevate --query id --output tsv)
+                  az role assignment create --assignee $PRINCIPAL_ID --scope $REGISTRY_ID --role "AcrPull"
                 fi
           - task: AzureCLI@2
             displayName: 'Generate and Store Secrets in Key Vault'
