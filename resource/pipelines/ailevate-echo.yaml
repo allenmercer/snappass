@@ -226,7 +226,7 @@ stages:
                 SECRET_KEY_URI=$(az keyvault secret show --vault-name $KV_NAME --name "ECHO-SECRET-KEY" --query "id" -o tsv)
                 REDIS_KEY_URI=$(az keyvault secret show --vault-name $KV_NAME --name "REDIS-ACCESS-KEY" --query "id" -o tsv)
                 
-                REDIS_URL_SETTING="redis://:@Microsoft.KeyVault(SecretUri=${REDIS_KEY_URI})${REDIS_HOST}:6380/0"
+                REDIS_URL_SETTING="redis://:@Microsoft.KeyVault(SecretUri=${REDIS_KEY_URI})${REDIS_HOST}:6380"
 
                 echo "Updating App Service Application Settings..."
                 az webapp config appsettings set -g "$(AZURE_RG_NAME)" -n "$APP_NAME" --settings \
