@@ -26,7 +26,8 @@ resource "azurerm_linux_web_app" "lwa" {
     #linux_fx_version = "DOCKER|ailevate.azurecr.io/echo:${var.image_tag}"
     application_stack {
       # This points to the image built and pushed by the pipeline
-      docker_image_name   = "echo:${var.image_tag}"
+      #docker_image_name   = "echo:${var.image_tag}"
+      docker_image_name   = "echo:latest"
       docker_registry_url = "https://${data.azurerm_container_registry.acr.login_server}"
     }
   }
@@ -52,5 +53,7 @@ resource "azurerm_role_assignment" "app_to_acr" {
 
   scope                = data.azurerm_container_registry.acr.id
   role_definition_name = "AcrPull"
-  principal_id         = azurerm_linux_web_app.lwa.identity[0].principal_id
+  principal_id         = azurerm_linux_web_app.lwa.identity[0].principal_id # or object id
+  # skip service principal check
+  # --acr-use-managed-identity true
 }
