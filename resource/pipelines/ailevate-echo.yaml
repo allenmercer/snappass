@@ -90,7 +90,7 @@ stages:
     displayName: 'Deploy Azure Infrastructure'
     pool:
       name: 'global-aks'
-    environment: '$(AZURE_PROJECT_NAME)'
+    environment: 'allen-playground01' # FIX
     strategy:
       runOnce:
         deploy:
@@ -252,7 +252,7 @@ stages:
       workspace:
         clean: all
       # This is the environment in ADO where the results of this job will be displayed.
-      environment: '$(AZURE_PROJECT_NAME)'
+      environment: 'allen-playground01'
       strategy:
         runOnce:
           deploy:
