@@ -227,67 +227,67 @@ stages:
                   # Change REDIS_PREFIX to AZURE_PROJECT_NAME
 
 
-  ############################################################
-  ### Stage to Destroy Azure Infrastructure                ###
-  ############################################################
-  - stage: destroyAzureInfrastructure
-    displayName: 'Destroy Azure Infrastructure'
-    trigger: manual
-    jobs:
-      ### Job to Destroy Azure Infrastructure ###
-      - deployment: destroyAzureInfrastructure
-        displayName: 'Destory Azure Infrastructure'
-        pool:
-          name: 'global-aks'
-        workspace:
-          clean: all
-        # This is the environment in ADO where the results of this job will be displayed.
-        environment: '$(AZURE_PROJECT_NAME)'
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - checkout: self
-                - download: current
-                  artifact: terraform-manifests
-                
-                - task: ReplaceTokens@6
-                  displayName: 'Replace Terraform Variables'
-                  inputs:
-                    targetFiles: '$(Pipeline.Workspace)/terraform-manifests/*.tf'
-                    tokenPattern: custom
-                    tokenPrefix: '<-'
-                    tokenSuffix: '->'
+############################################################
+### Stage to Destroy Azure Infrastructure                ###
+############################################################
+- stage: destroyAzureInfrastructure
+  displayName: 'Destroy Azure Infrastructure'
+  trigger: manual
+  jobs:
+    ### Job to Destroy Azure Infrastructure ###
+    - deployment: destroyAzureInfrastructure
+      displayName: 'Destory Azure Infrastructure'
+      pool:
+        name: 'global-aks'
+      workspace:
+        clean: all
+      # This is the environment in ADO where the results of this job will be displayed.
+      environment: '$(AZURE_PROJECT_NAME)'
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+              - checkout: self
+              - download: current
+                artifact: terraform-manifests
+              
+              - task: ReplaceTokens@6
+                displayName: 'Replace Terraform Variables'
+                inputs:
+                  targetFiles: '$(Pipeline.Workspace)/terraform-manifests/*.tf'
+                  tokenPattern: custom
+                  tokenPrefix: '<-'
+                  tokenSuffix: '->'
 
-                ### Task to Run Terraform Init
-                - task: TerraformTaskV4@4
-                  displayName: 'Run Terrafrom Init'
-                  #retryCountOnTaskFailure: 3
-                  inputs:
-                    provider: 'azurerm'
-                    command: 'init'
-                    workingDirectory: '$(Pipeline.Workspace)/terraform-manifests'
-                    backendServiceArm: '$(TERRAFORM_BACKEND_SPN)'
-                    backendAzureRmResourceGroupName: '$(TERRAFORM_BACKEND_RG)'
-                    backendAzureRmStorageAccountName: '$(TERRAFORM_BACKEND_SA)'
-                    backendAzureRmContainerName: '$(TERRAFORM_BACKEND_CONTAINER)'
-                    backendAzureRmKey: '$(AZURE_PROJECT_NAME).tfstate'
-                    
-                ### Task to Run Terraform Plan Destroy
-                - task: TerraformTaskV4@4
-                  displayName: 'Run Terrafrom Plan Destroy'
-                  inputs:
-                    command: 'plan'
-                    workingDirectory: '$(Pipeline.Workspace)/terraform-manifests'
-                    backendServiceArm: '$(TERRAFORM_BACKEND_SPN)'
-                    environmentServiceNameAzureRM: '$(AZURE_SERVICE_SPN)'
-                    commandOptions: '-destroy -out destroy-$(Build.BuildId).plan'
-                ### Task to Run Terraform Apply Destroy
-                - task: TerraformTaskV4@4
-                  displayName: 'Run Terrafrom Apply Destory'
-                  inputs:
-                    command: 'apply'
-                    workingDirectory: '$(Pipeline.Workspace)/terraform-manifests'
-                    backendServiceArm: '$(TERRAFORM_BACKEND_SPN)'
-                    environmentServiceNameAzureRM: '$(AZURE_SERVICE_SPN)'
-                    commandOptions: 'destroy-$(Build.BuildId).plan'
+              ### Task to Run Terraform Init
+              - task: TerraformTaskV4@4
+                displayName: 'Run Terrafrom Init'
+                #retryCountOnTaskFailure: 3
+                inputs:
+                  provider: 'azurerm'
+                  command: 'init'
+                  workingDirectory: '$(Pipeline.Workspace)/terraform-manifests'
+                  backendServiceArm: '$(TERRAFORM_BACKEND_SPN)'
+                  backendAzureRmResourceGroupName: '$(TERRAFORM_BACKEND_RG)'
+                  backendAzureRmStorageAccountName: '$(TERRAFORM_BACKEND_SA)'
+                  backendAzureRmContainerName: '$(TERRAFORM_BACKEND_CONTAINER)'
+                  backendAzureRmKey: '$(AZURE_PROJECT_NAME).tfstate'
+                  
+              ### Task to Run Terraform Plan Destroy
+              - task: TerraformTaskV4@4
+                displayName: 'Run Terrafrom Plan Destroy'
+                inputs:
+                  command: 'plan'
+                  workingDirectory: '$(Pipeline.Workspace)/terraform-manifests'
+                  backendServiceArm: '$(TERRAFORM_BACKEND_SPN)'
+                  environmentServiceNameAzureRM: '$(AZURE_SERVICE_SPN)'
+                  commandOptions: '-destroy -out destroy-$(Build.BuildId).plan'
+              ### Task to Run Terraform Apply Destroy
+              - task: TerraformTaskV4@4
+                displayName: 'Run Terrafrom Apply Destory'
+                inputs:
+                  command: 'apply'
+                  workingDirectory: '$(Pipeline.Workspace)/terraform-manifests'
+                  backendServiceArm: '$(TERRAFORM_BACKEND_SPN)'
+                  environmentServiceNameAzureRM: '$(AZURE_SERVICE_SPN)'
+                  commandOptions: 'destroy-$(Build.BuildId).plan'
