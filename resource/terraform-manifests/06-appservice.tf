@@ -24,12 +24,12 @@ resource "azurerm_linux_web_app" "lwa" {
     always_on  = true
     ftps_state = "Disabled"
     #linux_fx_version = "DOCKER|ailevate.azurecr.io/echo:${var.image_tag}"
+    container_registry_use_managed_identity = true
     application_stack {
       # This points to the image built and pushed by the pipeline
       #docker_image_name   = "echo:${var.image_tag}"
       docker_image_name   = "echo:latest"
       docker_registry_url = "https://${data.azurerm_container_registry.acr.login_server}"
-      container_registry_use_managed_identity = true
     }
   }
   #app_settings = {
