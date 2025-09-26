@@ -29,7 +29,7 @@ resource "azurerm_linux_web_app" "lwa" {
       #docker_image_name   = "echo:${var.image_tag}"
       docker_image_name   = "echo:latest"
       docker_registry_url = "https://${data.azurerm_container_registry.acr.login_server}"
-      acr_use_managed_identity_credentials = true
+      container_registry_use_managed_identity = true
     }
   }
   #app_settings = {
