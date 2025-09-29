@@ -15,6 +15,7 @@ resource "azurerm_linux_web_app" "lwa" {
   location            = azurerm_resource_group.rg.location
   service_plan_id     = azurerm_service_plan.asp.id
   https_only          = true
+  key_vault_reference_identity_id = azurerm_user_assigned_identity.app_identity.id
   tags                = local.tags
   identity {
     type = "SystemAssigned"
@@ -32,9 +33,15 @@ resource "azurerm_linux_web_app" "lwa" {
       docker_registry_url = "https://${data.azurerm_container_registry.acr.login_server}"
     }
   }
-  #app_settings = {
-  #  WEBSITE_PULL_IMAGE_OVER_VNET = true
-  #}
+  app_settings = {
+    "REDIS_URL"     = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.redis_url.id})"
+    "SECRET_KEY"    = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.app_key.id})"
+    "WEBSITES_PORT" = "5000"
+    "REDIS_PREFIX"  = "echo"
+    "DEBUG"         = "false"
+    "NO_SSL"        = "false"
+    "SNAPPASS_PORT" = "5000"
+  }
 }
 
 data "azurerm_container_registry" "acr" {
