@@ -15,7 +15,7 @@ resource "azurerm_linux_web_app" "lwa" {
   location            = azurerm_resource_group.rg.location
   service_plan_id     = azurerm_service_plan.asp.id
   https_only          = true
-  key_vault_reference_identity_id = azurerm_user_assigned_identity.app_identity.id
+  #key_vault_reference_identity_id = azurerm_user_assigned_identity.app_identity.id
   tags                = local.tags
   identity {
     type = "SystemAssigned"
