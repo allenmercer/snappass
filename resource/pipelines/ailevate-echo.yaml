@@ -145,15 +145,20 @@ stages:
                 echo "Ensuring Resource Group '$(AZURE_RG_NAME)' exists..."
                 az group create --name "$AZURE_RG_NAME" --location "$AZURE_RG_LOCATION"
 
-                # UPDATED: Added the --tags parameter to this command
                 echo "Ensuring Key Vault '$KEY_VAULT_NAME' exists with tags..."
-                az keyvault create --name "$KEY_VAULT_NAME" --resource-group "$AZURE_RG_NAME" --location "$AZURE_RG_LOCATION" --retention-days 7 \
-                  --tags \
-                    creator='pipeline' \
-                    workloadtier='$(TAG_REQUIRED_WORKLOADTIER)' \
-                    customer='$(TAG_REQUIRED_CUSTOMER)' \
-                    environment='$(AZURE_PROJECT_LE)' \
-                    workload='$(AZURE_PROJECT_NAME)'
+                if az keyvault show --name "$KEY_VAULT_NAME" --resource-group "$(AZURE_RG_NAME)" &>/dev/null; then
+                  echo "Key Vault '$KEY_VAULT_NAME' already exists. Skipping creation."
+                else
+                  echo "Key Vault '$KEY_VAULT_NAME' not found. Creating..."
+                  # UPDATED: Replaced --enable-soft-delete with --retention-days
+                  az keyvault create --name "$KEY_VAULT_NAME" --resource-group "$(AZURE_RG_NAME)" --location "$(AZURE_RG_LOCATION)" --retention-days 7 \
+                    --tags \
+                      creator='pipeline' \
+                      workloadtier='$(TAG_REQUIRED_WORKLOADTIER)' \
+                      customer='$(TAG_REQUIRED_CUSTOMER)' \
+                      environment='$(AZURE_PROJECT_LE)' \
+                      workload='$(AZURE_PROJECT_NAME)'
+                fi
 
                     # This command does not need tags
                     echo "Ensuring pipeline has secret permissions on Key Vault..."
