@@ -65,18 +65,18 @@ stages:
         tags: 'latest' # '$(IMAGE_TAG)'
         buildContext: 'source'
     
-    #- task: CopyFiles@2
-    #  displayName: 'Copy Terraform Manifests'
-    #  inputs:
-    #    SourceFolder: '$(System.DefaultWorkingDirectory)/resource/terraform-manifests'
-    #    Contents: '**'
-    #    TargetFolder: '$(Build.ArtifactStagingDirectory)/terraform'
-    #
-    #- task: PublishBuildArtifacts@1
-    #  displayName: 'Publish Terraform Artifact'
-    #  inputs:
-    #    PathtoPublish: '$(Build.ArtifactStagingDirectory)/terraform'
-    #    ArtifactName: 'terraform-manifests'
+    - task: CopyFiles@2
+      displayName: 'Copy Terraform Manifests'
+      inputs:
+        SourceFolder: '$(System.DefaultWorkingDirectory)/resource/terraform-manifests'
+        Contents: '**'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)/terraform'
+    
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Terraform Artifact'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/terraform'
+        ArtifactName: 'terraform-manifests'
 
 ############################################################
 ### Stage to Deploy Azure Infrastructure                 ###
