@@ -139,17 +139,15 @@ stages:
               scriptLocation: 'inlineScript'
               inlineScript: |
                 set -e
-                RG_NAME="$(AZURE_RG_NAME)"
-                LOCATION="$(AZURE_RG_LOCATION)"
                 KEY_VAULT_NAME="$(AZURE_PROJECT_NAME)-kv"
                 
                 # This command does not need tags; Terraform will add them.
-                echo "Ensuring Resource Group '$(RG_NAME)' exists..."
-                az group create --name "$RG_NAME" --location "$LOCATION"
+                echo "Ensuring Resource Group '$(AZURE_RG_NAME)' exists..."
+                az group create --name "$AZURE_RG_NAME" --location "$AZURE_RG_LOCATION"
 
                 # UPDATED: Added the --tags parameter to this command
-                echo "Ensuring Key Vault '$(KEY_VAULT_NAME)' exists with tags..."
-                az keyvault create --name "$KEY_VAULT_NAME" --resource-group "$RG_NAME" --location "$LOCATION" --retention-days 7 \
+                echo "Ensuring Key Vault '$KEY_VAULT_NAME' exists with tags..."
+                az keyvault create --name "$KEY_VAULT_NAME" --resource-group "$AZURE_RG_NAME" --location "$AZURE_RG_LOCATION" --retention-days 7 \
                   --tags \
                     creator='pipeline' \
                     workloadtier='$(TAG_REQUIRED_WORKLOADTIER)' \
@@ -160,6 +158,7 @@ stages:
                     # This command does not need tags
                     echo "Ensuring pipeline has secret permissions on Key Vault..."
                     PIPELINE_SP_ID=$(az ad sp list --display-name "$(AZURE_SERVICE_SPN)" --query '[0].id' -o tsv)
+                    echo "Pipeline SP ID: $PIPELINE_SP_ID"
                     az keyvault set-policy --name "$KEY_VAULT_NAME" --object-id "$PIPELINE_SP_ID" --secret-permissions get list set delete purge
                     
           - task: TerraformTaskV4@4
