@@ -36,23 +36,23 @@ stages:
 
     - script: |
         echo "Applying Ailevate customizations..."
-        
-        # Create a directory for images
-        mkdir -p source/snappass/static/img
-
-        # Copy the logo, background, stylesheet, and all HTML templates
-        cp -Rv customizations/img/* source/snappass/static/img/
-        cat customizations/css/custom.css >> source/snappass/static/snappass/css/custom.css
-        cp -Rv customizations/templates/* source/snappass/templates/
-        
-        # Replace the SnapPass text in set_password
-        # This is one of two places where the end user would see the word SnapPass.
-        # The second place is the Redis prefix.
-        sed -i 's/SnapPass/Ailevate Echo/g' source/snappass/templates/set_password.html
-
-        # Replace all instances of the word snappass or snap pass, case insensitive, from any template to prevent leakage.
-        sed -i '/STATIC_URL/! s/snappass/ailevateecho/I' source/snappass/templates/*
-        sed -i '/STATIC_URL/! s/snap pass/ailevate echo/I' source/snappass/templates/*
+#        
+#        # Create a directory for images
+#        mkdir -p source/snappass/static/img
+#
+#        # Copy the logo, background, stylesheet, and all HTML templates
+#        cp -Rv customizations/img/* source/snappass/static/img/
+#        cat customizations/css/custom.css >> source/snappass/static/snappass/css/custom.css
+#        cp -Rv customizations/templates/* source/snappass/templates/
+#        
+#        # Replace the SnapPass text in set_password
+#        # This is one of two places where the end user would see the word SnapPass.
+#        # The second place is the Redis prefix.
+#        sed -i 's/SnapPass/Ailevate Echo/g' source/snappass/templates/set_password.html
+#
+#        # Replace all instances of the word snappass or snap pass, case insensitive, from any template to prevent leakage.
+#        sed -i '/STATIC_URL/! s/snappass/ailevateecho/I' source/snappass/templates/*
+#        sed -i '/STATIC_URL/! s/snap pass/ailevate echo/I' source/snappass/templates/*
       displayName: 'Apply Custom Templates, Styles, & Assets'
 
     - task: Docker@2
@@ -151,7 +151,7 @@ stages:
                 else
                   echo "Key Vault '$KEY_VAULT_NAME' not found. Creating..."
                   # UPDATED: Replaced --enable-soft-delete with --retention-days
-                  az keyvault create --name "$KEY_VAULT_NAME" --resource-group "$(AZURE_RG_NAME)" --location "$(AZURE_RG_LOCATION)" --retention-days 7 \
+                  az keyvault create --name "$KEY_VAULT_NAME" --resource-group "$(AZURE_RG_NAME)" --location "$(AZURE_RG_LOCATION)" --retention-days 7 --enable-rbac-authorization false \
                     --tags \
                       creator='pipeline' \
                       workloadtier='$(TAG_REQUIRED_WORKLOADTIER)' \
