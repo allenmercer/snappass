@@ -361,3 +361,18 @@ stages:
                   backendServiceArm: '$(TERRAFORM_BACKEND_SPN)'
                   environmentServiceNameAzureRM: '$(AZURE_SERVICE_SPN)'
                   commandOptions: 'destroy-$(Build.BuildId).plan'
+              - task: AzureCLI@2
+                displayName: 'Bootstrap Permissions for Destroy'
+                inputs:
+                  azureSubscription: '$(AZURE_SERVICE_SPN)'
+                  scriptType: 'bash'
+                  scriptLocation: 'inlineScript'
+                  inlineScript: |
+                    set -e
+                    if [ "$(az group exists --name '$(AZURE_RG_NAME)')" = "true" ]; then
+                      KEY_VAULT_NAME="$(AZURE_PROJECT_NAME)-kv"
+                      PIPELINE_SP_ID=$(az ad sp show --id $servicePrincipalId --query "id" -o tsv)
+                      az keyvault set-policy --name "$KEY_VAULT_NAME" --object-id "$PIPELINE_SP_ID" --secret-permissions get list set delete purge --output none
+                    else
+                      echo "Resource group '$(AZURE_RG_NAME)' not found, skipping bootstrap."
+                    fi
