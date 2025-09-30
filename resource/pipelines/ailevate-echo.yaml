@@ -229,6 +229,16 @@ stages:
                   REGISTRY_ID=$(az acr show -g sre-store -n ailevate --query id --output tsv)
                   az role assignment create --assignee $PRINCIPAL_ID --scope $REGISTRY_ID --role "AcrPull"
                 fi
+          - task: AzureCLI@2
+            displayName: 'Restart App Service to Pull Latest Image'
+            inputs:
+              azureSubscription: '$(AZURE_SERVICE_SPN)'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                echo "Restarting App Service '$(AZURE_PROJECT_NAME)-lwa' to force a pull of the :latest image..."
+                az webapp restart --name "$(AZURE_PROJECT_NAME)-lwa" --resource-group "$(AZURE_RG_NAME)"
+
 #          - task: AzureCLI@2
 #            displayName: 'Generate and Store Secrets in Key Vault'
 #            inputs:
