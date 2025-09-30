@@ -1,8 +1,8 @@
 # Azure Cache for Redis Block
 resource "azurerm_redis_cache" "redis" {
   name                          = "${var.project_name}-redis"
-  location                      = azurerm_resource_group.rg.location
-  resource_group_name           = azurerm_resource_group.rg.name
+  location                      = var.location
+  resource_group_name           = var.rg_name
   capacity                      = 1 # C1 Standard
   family                        = "C"
   sku_name                      = "Standard"
@@ -15,14 +15,14 @@ resource "azurerm_redis_cache" "redis" {
 # Private DNS Zone for Redis
 resource "azurerm_private_dns_zone" "redis_pdz" {
   name                = "privatelink.redis.cache.windows.net"
-  resource_group_name = azurerm_resource_group.rg.name
+  resource_group_name = var.rg_name
   tags                = local.tags
 }
 
 # VNet link for the Private DNS Zone
 resource "azurerm_private_dns_zone_virtual_network_link" "redis_pdz_vnet_link" {
   name                  = "${var.project_name}-redis-pdz-vnet-link"
-  resource_group_name   = azurerm_resource_group.rg.name
+  resource_group_name   = var.rg_name
   private_dns_zone_name = azurerm_private_dns_zone.redis_pdz.name
   virtual_network_id    = azurerm_virtual_network.vnet.id
 }
@@ -30,8 +30,8 @@ resource "azurerm_private_dns_zone_virtual_network_link" "redis_pdz_vnet_link" {
 # Private Endpoint for Redis Cache
 resource "azurerm_private_endpoint" "redis_pe" {
   name                = "${var.project_name}-redis-pe"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
+  location            = var.location
+  resource_group_name = var.rg_name
   subnet_id           = azurerm_subnet.pe_snet.id
   tags                = local.tags
   private_dns_zone_group {

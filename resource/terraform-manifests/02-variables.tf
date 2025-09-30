@@ -46,10 +46,10 @@ variable "project_name" {
   type = string
 }
 
-variable "snappass_subdomain" {
+variable "custom_subdomain" {
   description = "WordPress Subdomain"
   # This variable already exists in the pipeline as AZURE_PROJECT_NAME.  It can be sent as a Terraform command line option.
-  default = "<-SNAPPASS_SUBDOMAIN->"
+  default = "<-CUSTOM_SUBDOMAIN->"
   type = string
 }
 

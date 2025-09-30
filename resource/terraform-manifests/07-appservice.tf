@@ -1,8 +1,8 @@
 # App Service Plan Block
 resource "azurerm_service_plan" "asp" {
   name                = "${var.project_name}-asp"
-  resource_group_name = azurerm_resource_group.rg.name
-  location            = azurerm_resource_group.rg.location
+  resource_group_name = var.rg_name
+  location            = var.location
   os_type             = "Linux"
   sku_name            = "P1v3"
   tags                = local.tags
@@ -11,8 +11,8 @@ resource "azurerm_service_plan" "asp" {
 # Linux Web App Block
 resource "azurerm_linux_web_app" "lwa" {
   name                = "${var.project_name}-lwa"
-  resource_group_name = azurerm_resource_group.rg.name
-  location            = azurerm_resource_group.rg.location
+  resource_group_name = var.rg_name
+  location            = var.location
   service_plan_id     = azurerm_service_plan.asp.id
   https_only          = true
   #key_vault_reference_identity_id = azurerm_user_assigned_identity.app_identity.id
