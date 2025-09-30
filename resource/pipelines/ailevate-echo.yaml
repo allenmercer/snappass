@@ -162,8 +162,8 @@ stages:
 
                 echo "Ensuring pipeline has secret permissions on Key Vault..."
                 # Use the pipeline's built-in Service Principal ID to reliably get the Object ID
-                echo "Looking up pipeline's Object ID using its Service Principal ID: $(servicePrincipalId)"
-                PIPELINE_SP_ID=$(az ad sp show --id $(servicePrincipalId) --query id -o tsv)
+                echo "Looking up pipeline's Object ID using its Service Principal ID: $servicePrincipalId"
+                PIPELINE_SP_ID=$(az ad sp show --id $servicePrincipalId --query id -o tsv)
                 echo "Pipeline Object ID found: $PIPELINE_SP_ID"
 
                 # This command will now succeed
