@@ -143,19 +143,25 @@ stages:
                 LOCATION="$(AZURE_RG_LOCATION)"
                 KEY_VAULT_NAME="$(AZURE_PROJECT_NAME)-kv"
                 
-                # 1. Ensure the Resource Group exists. This is idempotent.
+                # This command does not need tags; Terraform will add them.
                 echo "Ensuring Resource Group '$(RG_NAME)' exists..."
                 az group create --name "$RG_NAME" --location "$LOCATION"
 
-                # 2. Ensure the Key Vault exists. This will now succeed.
-                echo "Ensuring Key Vault '$(KEY_VAULT_NAME)' exists..."
-                az keyvault create --name "$KEY_VAULT_NAME" --resource-group "$RG_NAME" --location "$LOCATION" --enable-soft-delete true
+                # UPDATED: Added the --tags parameter to this command
+                echo "Ensuring Key Vault '$(KEY_VAULT_NAME)' exists with tags..."
+                az keyvault create --name "$KEY_VAULT_NAME" --resource-group "$RG_NAME" --location "$LOCATION" --retention-days 7 \
+                  --tags \
+                    creator='pipeline' \
+                    workloadtier='$(TAG_REQUIRED_WORKLOADTIER)' \
+                    customer='$(TAG_REQUIRED_CUSTOMER)' \
+                    environment='$(AZURE_PROJECT_LE)' \
+                    workload='$(AZURE_PROJECT_NAME)'
 
-                # 3. Ensure the pipeline has permissions on the Key Vault.
-                echo "Ensuring pipeline has secret permissions on Key Vault..."
-                PIPELINE_SP_ID=$(az ad sp list --display-name "$(AZURE_SERVICE_SPN)" --query '[0].id' -o tsv)
-                az keyvault set-policy --name "$KEY_VAULT_NAME" --object-id "$PIPELINE_SP_ID" --secret-permissions get list set delete purge
-                
+                    # This command does not need tags
+                    echo "Ensuring pipeline has secret permissions on Key Vault..."
+                    PIPELINE_SP_ID=$(az ad sp list --display-name "$(AZURE_SERVICE_SPN)" --query '[0].id' -o tsv)
+                    az keyvault set-policy --name "$KEY_VAULT_NAME" --object-id "$PIPELINE_SP_ID" --secret-permissions get list set delete purge
+                    
           - task: TerraformTaskV4@4
             displayName: 'Run Terrafrom Init'
             inputs:
