@@ -160,15 +160,19 @@ stages:
                       workload='$(AZURE_PROJECT_NAME)'
                 fi
 
-                echo "Ensuring pipeline has secret permissions on Key Vault..."
-                # Use the pipeline's built-in Service Principal ID to reliably get the Object ID
-                echo "Looking up pipeline's Object ID using its Service Principal ID: $servicePrincipalId"
-                PIPELINE_SP_ID=$(az ad sp show --id $servicePrincipalId --query id -o tsv)
-                echo "Pipeline Object ID found: $PIPELINE_SP_ID"
+                echo "Granting pipeline secret permissions on Key Vault..."
+                
+                # 1. Get the Application (Client) ID of the currently logged-in Service Principal
+                SP_APP_ID=$(az account show --query "user.name" -o tsv)
+                echo "Found Application ID for pipeline: $SP_APP_ID"
 
-                # This command will now succeed
-                az keyvault set-policy --name "$KEY_VAULT_NAME" --object-id "$PIPELINE_SP_ID" --secret-permissions get list set delete purge
+                # 2. Use the Application ID to look up the Service Principal's unique Object ID
+                PIPELINE_SP_ID=$(az ad sp show --id $SP_APP_ID --query "id" -o tsv)
+                echo "Found Object ID for pipeline: $PIPELINE_SP_ID"
 
+                # 3. Assign the policy using the reliably-found Object ID
+                az keyvault set-policy --name "$KEY_VAULT_NAME" --object-id "$PIPELINE_SP_ID" --secret-permissions get list set delete purge --output none
+                
           - task: TerraformTaskV4@4
             displayName: 'Run Terrafrom Init'
             inputs:
