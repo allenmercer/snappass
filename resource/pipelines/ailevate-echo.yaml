@@ -362,17 +362,24 @@ stages:
                   environmentServiceNameAzureRM: '$(AZURE_SERVICE_SPN)'
                   commandOptions: 'destroy-$(Build.BuildId).plan'
               - task: AzureCLI@2
-                displayName: 'Bootstrap Permissions for Destroy'
+                displayName: 'Delete Bootstrap Resources (Key Vault and RG)'
                 inputs:
                   azureSubscription: '$(AZURE_SERVICE_SPN)'
                   scriptType: 'bash'
                   scriptLocation: 'inlineScript'
                   inlineScript: |
                     set -e
+
                     if [ "$(az group exists --name '$(AZURE_RG_NAME)')" = "true" ]; then
                       KEY_VAULT_NAME="$(AZURE_PROJECT_NAME)-kv"
-                      PIPELINE_SP_ID=$(az ad sp show --id $servicePrincipalId --query "id" -o tsv)
-                      az keyvault set-policy --name "$KEY_VAULT_NAME" --object-id "$PIPELINE_SP_ID" --secret-permissions get list set delete purge --output none
+                      echo "Purging and deleting Key Vault '$KEY_VAULT_NAME'..."
+                      # Delete the Key Vault first
+                      az keyvault delete --name "$KEY_VAULT_NAME" --resource-group "$(AZURE_RG_NAME)"
+                      # Now purge it from the soft-deleted state
+                      az keyvault purge --name "$KEY_VAULT_NAME"
+
+                      echo "Deleting Resource Group '$(AZURE_RG_NAME)'..."
+                      az group delete --name "$(AZURE_RG_NAME)" --yes --no-wait
                     else
-                      echo "Resource group '$(AZURE_RG_NAME)' not found, skipping bootstrap."
+                      echo "Resource group '$(AZURE_RG_NAME)' not found, nothing to delete."
                     fi
