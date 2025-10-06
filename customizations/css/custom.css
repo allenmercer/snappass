@@ -62,12 +62,6 @@ body {
   align-items: center;
 }
 
-.navbar-logo {
-  height: 40px;
-  width: auto;
-  vertical-align: middle;
-}
-
 /* Bootstrap Button Overrides */
 .btn {
   border-radius: 8px;
@@ -125,9 +119,10 @@ input[readonly].readonly-text {
 
 /* Logo image settings */
 .navbar-logo {
-  height: 40px;
+  height: 32px;
   width: auto;
   vertical-align: middle;
+  margin-top: -2px;
 }
 
 /* Title centered */
