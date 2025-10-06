@@ -37,27 +37,11 @@ body {
   box-shadow: none;
 }
 
-.navbar-header {
-  position: relative;
-}
-
 .navbar-brand.logo-left {
   position: relative;
   z-index: 2;
   padding: 10px 15px;
   vertical-align: middle;
-}
-
-.navbar-brand.center-title {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  top: 50%;
-  transform: translate(-50%, -50%);
-  font-weight: 600;
-  font-size: 18px;
-  color: #ffffff;
-  z-index: 1;
 }
 
 .nav-left {
