@@ -1,4 +1,6 @@
-/* Body and Background */
+/* ======================================
+   🧩 Body and Background
+   ====================================== */
 body {
   margin: 0;
   padding-top: 60px;
@@ -9,14 +11,17 @@ body {
   color: #333333; /* Dark grey text */
 }
 
-/* Main Content Area */
+/* ======================================
+   🧱 Main Content Area
+   ====================================== */
 .main-content {
   padding-top: 60px;
   flex-grow: 1;
-  color: #333333; /* Dark grey text */
 }
 
-/* Site Footer */
+/* ======================================
+   🦶 Site Footer
+   ====================================== */
 .site-footer {
   padding: 20px 0;
   text-align: center;
@@ -24,16 +29,14 @@ body {
   font-size: 14px;
 }
 
-/* Navbar Styling */
-.navbar {
+/* ======================================
+   🚀 Navbar Styling
+   ====================================== */
+.navbar,
+.navbar-default {
   background-color: #002f6c; /* Ailevate blue */
   border: none;
   margin-bottom: 0;
-}
-
-.navbar-default {
-  background-color: #002F6C; /* Ailevate Blue */
-  border: none;
   box-shadow: none;
 }
 
@@ -74,13 +77,15 @@ body {
 
 /* Title centered */
 .nav-center .navbar-title {
-  color: white;
+  color: #ffffff;
   font-weight: 600;
   font-size: 18px;
   text-align: center;
 }
 
-/* Bootstrap Button Overrides */
+/* ======================================
+   🔘 Bootstrap Button Overrides
+   ====================================== */
 .btn {
   border-radius: 8px;
   transition: background-color 0.3s ease, border-color 0.3s ease;
@@ -98,25 +103,30 @@ body {
   border-color: #f39c12;
 }
 
+/* ======================================
+   🧾 Form Elements
+   ====================================== */
 input, textarea, select {
-  font-size: 16px; /* prevents mobile zoom-in */
-}
-
-/* Original css contents */
-html {
-    position: relative;
-    min-height: 100%;
-}
-
-.break-word {
-    word-wrap: break-word;
-}
-
-.margin-bottom-10 {
-    margin-bottom: 10px;
+  font-size: 16px; /* Prevents mobile zoom-in */
 }
 
 input[readonly].readonly-text {
-    background-color: #fff;
-    cursor: text;
+  background-color: #ffffff;
+  cursor: text;
+}
+
+/* ======================================
+   ⚙️ Layout / Utility
+   ====================================== */
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+.break-word {
+  word-wrap: break-word;
+}
+
+.margin-bottom-10 {
+  margin-bottom: 10px;
 }
