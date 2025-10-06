@@ -101,6 +101,10 @@ input[readonly].readonly-text {
   margin-bottom: 0;
 }
 
+input, textarea, select {
+  font-size: 16px; /* prevents mobile zoom-in */
+}
+
 /* Container spanning full nav width with flexbox layout */
 .full-width-nav {
   display: flex;
