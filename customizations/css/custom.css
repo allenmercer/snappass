@@ -1,101 +1,84 @@
 /* Body and Background */
-#body {
-#  margin: 0;
-#  background-image: url('../../img/hero-bg-cc.jpg');
-#  background-size: cover;
-#  background-position: center center;
-#  background-repeat: no-repeat;
-#  min-height: 100vh;
-#}
-
-/* Update body to use flexbox for sticky footer */
 body {
   margin: 0;
-  background-image: url('../../img/hero-bg-cc.jpg');
-  background-size: cover;
-  background-position: center center;
-  background-repeat: no-repeat;
+  background-color: #ffffff; /* White background */
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-}
-
-/* Update main-content to fill available space */
-.main-content {
-  padding-top: 60px;
-  flex-grow: 1; /* This makes the content area expand, pushing the footer down */
-  color: #fff;
-}
-
-/* New styles for the footer */
-.site-footer {
-  padding: 20px 0;
-  text-align: center;
-  color: #ccc; /* Light grey for less emphasis */
-  font-size: 14px;
-}
-
-/* Site Logo - Absolutely Positioned */
-.site-logo {
-  position: absolute;
-  top: 80px;    /* Distance from the top of the screen */
-  left: 50px;   /* Distance from the far left of the screen */
-  z-index: 100; /* Keeps the logo on top of other elements */
-}
-
-.site-logo img {
-  width: 210px; /* 150px * 1.4 = 210px */
-  height: auto;
-}
-
-/* Transparent Navbar */
-.navbar-default {
-    background-color: transparent;
-    border: none;
-    box-shadow: none;
-}
-
-.navbar-default .navbar-brand {
-    color: #fff;
-}
-.navbar-default .navbar-brand:hover,
-.navbar-default .navbar-brand:focus {
-    color: lightgrey;
+  color: #333333; /* Dark grey text */
 }
 
 /* Main Content Area */
 .main-content {
-  padding-top: 60px; /* Pushes the content down to make space */
+  padding-top: 60px;
+  flex-grow: 1;
+  color: #333333; /* Dark grey text */
 }
 
-/* Center the H1 ("Set Secret") within the main content area */
-#.main-content h1 {
-#  color: #fff;
-#  text-align: center;
-#  margin-bottom: 30px;
-#}
+/* Site Footer */
+.site-footer {
+  padding: 20px 0;
+  text-align: center;
+  color: #999999;
+  font-size: 14px;
+}
 
-/*
- * Override Bootstrap's default button styles
- */
+/* Navbar Styling */
+.navbar-default {
+  background-color: #002F6C; /* Ailevate Blue */
+  border: none;
+  box-shadow: none;
+}
 
-/* Optional: Adjust all buttons for a more modern look */
+.navbar-header {
+  position: relative;
+}
+
+.navbar-brand.logo-left {
+  position: relative;
+  z-index: 2;
+  padding: 10px 15px;
+  vertical-align: middle;
+}
+
+.navbar-brand.center-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-weight: 600;
+  font-size: 18px;
+  color: #ffffff;
+  z-index: 1;
+}
+
+.nav-left {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+}
+
+.navbar-logo {
+  height: 40px;
+  width: auto;
+  vertical-align: middle;
+}
+
+/* Bootstrap Button Overrides */
 .btn {
-  border-radius: 8px; /* Softer, rounded corners for all buttons */
-  transition: background-color 0.3s ease, border-color 0.3s ease; /* Smooth transitions */
+  border-radius: 8px;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
-/* Override the primary button's default blue color */
 .btn-primary {
-  background-color: #3a35d1;
-  border-color: #3a35d1; /* Match the border to the background */
+  background-color: #002f6c;
+  border-color: #002f6c;
 }
 
-#.main-content p {
-#  color: #fff;
-#}
-
-/* Change the primary button to orange on hover or focus */
 .btn-primary:hover,
 .btn-primary:focus,
 .btn-primary:active {
@@ -103,22 +86,59 @@ body {
   border-color: #f39c12;
 }
 
-
-/* Original */
-html {
-    position: relative;
-    min-height: 100%;
-}
-
+/* Utilities */
 .break-word {
-    word-wrap: break-word;
+  word-wrap: break-word;
 }
 
 .margin-bottom-10 {
-    margin-bottom: 10px;
+  margin-bottom: 10px;
 }
 
 input[readonly].readonly-text {
-    background-color: #fff;
-    cursor: text;
+  background-color: #fff;
+  cursor: text;
+}
+
+/* Navbar background color */
+.navbar {
+  background-color: #002f6c; /* Ailevate blue */
+  border: none;
+  margin-bottom: 0;
+}
+
+/* Container spanning full nav width with flexbox layout */
+.full-width-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  height: 60px;
+  padding: 0 15px;
+}
+
+/* Logo pinned to the far left */
+.nav-left {
+  position: absolute;
+  left: 0;
+}
+
+/* Logo image settings */
+.navbar-logo {
+  height: 40px;
+  width: auto;
+  vertical-align: middle;
+}
+
+/* Title centered */
+.nav-center .navbar-title {
+  color: white;
+  font-weight: 600;
+  font-size: 18px;
+  text-align: center;
+}
+
+/* Optional: fix body padding so navbar doesn't cover content */
+body {
+  padding-top: 60px;
 }
