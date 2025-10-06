@@ -1,6 +1,7 @@
 /* Body and Background */
 body {
   margin: 0;
+  padding-top: 60px;
   background-color: #ffffff; /* White background */
   min-height: 100vh;
   display: flex;
@@ -24,6 +25,12 @@ body {
 }
 
 /* Navbar Styling */
+.navbar {
+  background-color: #002f6c; /* Ailevate blue */
+  border: none;
+  margin-bottom: 0;
+}
+
 .navbar-default {
   background-color: #002F6C; /* Ailevate Blue */
   border: none;
@@ -55,11 +62,38 @@ body {
 
 .nav-left {
   position: absolute;
+  padding-left: 12px;
   left: 0;
   top: 50%;
   transform: translateY(-50%);
   display: flex;
   align-items: center;
+}
+
+/* Container spanning full nav width with flexbox layout */
+.full-width-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  height: 60px;
+  padding: 0 15px;
+}
+
+/* Logo image settings */
+.navbar-logo {
+  height: 32px;
+  width: auto;
+  vertical-align: middle;
+  margin-top: -2px;
+}
+
+/* Title centered */
+.nav-center .navbar-title {
+  color: white;
+  font-weight: 600;
+  font-size: 18px;
+  text-align: center;
 }
 
 /* Bootstrap Button Overrides */
@@ -80,64 +114,25 @@ body {
   border-color: #f39c12;
 }
 
-/* Utilities */
-.break-word {
-  word-wrap: break-word;
-}
-
-.margin-bottom-10 {
-  margin-bottom: 10px;
-}
-
-input[readonly].readonly-text {
-  background-color: #fff;
-  cursor: text;
-}
-
-/* Navbar background color */
-.navbar {
-  background-color: #002f6c; /* Ailevate blue */
-  border: none;
-  margin-bottom: 0;
-}
-
 input, textarea, select {
   font-size: 16px; /* prevents mobile zoom-in */
 }
 
-/* Container spanning full nav width with flexbox layout */
-.full-width-nav {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  height: 60px;
-  padding: 0 15px;
+/* Original css contents */
+html {
+    position: relative;
+    min-height: 100%;
 }
 
-/* Logo pinned to the far left */
-.nav-left {
-  position: absolute;
-  left: 0;
+.break-word {
+    word-wrap: break-word;
 }
 
-/* Logo image settings */
-.navbar-logo {
-  height: 32px;
-  width: auto;
-  vertical-align: middle;
-  margin-top: -2px;
+.margin-bottom-10 {
+    margin-bottom: 10px;
 }
 
-/* Title centered */
-.nav-center .navbar-title {
-  color: white;
-  font-weight: 600;
-  font-size: 18px;
-  text-align: center;
-}
-
-/* Optional: fix body padding so navbar doesn't cover content */
-body {
-  padding-top: 60px;
+input[readonly].readonly-text {
+    background-color: #fff;
+    cursor: text;
 }

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="{{ _('en') }}">
   <head>
-    <title>{{ _('Snappass - Share Secrets') }}</title>
+    <title>{{ _('Ailevate Secret Sharing Service') }}</title>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <link rel="icon" href="{{ url_for('static', filename='img/ailevate-favicon.svg') }}" type="image/svg+xml">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/ailevate-favicon.svg') }}" type="image/svg+xml">
     <link href="{{ config.STATIC_URL }}/bootstrap/css/bootstrap.min.css" rel="stylesheet">
@@ -11,38 +11,28 @@
     <link href="{{ config.STATIC_URL }}/css/custom.css" rel="stylesheet">
   </head>
 <body>
-<!-- This is a comment 
-    <nav class="navbar navbar-default navbar-static-top">
-      <div class="container">
-        <div class="navbar-header">
-          <a class="navbar-brand" href="/">{{ _('Share Secret') }}</a>
-        </div>
+  <nav class="navbar navbar-default navbar-static-top">
+    <div class="container-fluid full-width-nav">
+      <div class="nav-left">
+        <a class="navbar-brand logo-left">
+          <img src="{{ config.STATIC_URL }}/img/ailevate-logo-blue-orange-rev.svg" alt="Ailevate Logo" class="navbar-logo">
+        </a>
       </div>
-    </nav>
--->
-<nav class="navbar navbar-default navbar-static-top">
-  <div class="container full-width-nav">
-    <div class="nav-left">
-      <a class="navbar-brand logo-left">
-        <img src="{{ config.STATIC_URL }}/img/ailevate-logo-blue-orange-rev.svg" alt="Ailevate Logo" class="navbar-logo">
-      </a>
+      <div class="nav-center">
+        <a class="navbar-title" href="/">{{ _('Share Secret') }}</a>
+      </div>
     </div>
-    <div class="nav-center">
-      <a class="navbar-title" href="/">{{ _('Share Secret') }}</a>
-    </div>
+  </nav>
+  <div class="container main-content">
+      {% block content %}{% endblock %}
   </div>
-</nav>
-    <div class="container main-content">
-        {% block content %}{% endblock %}
-    </div>
-
-    <script src="{{ config.STATIC_URL }}/jquery/jquery-3.6.0.min.js"></script>
-    <script src="{{ config.STATIC_URL }}/bootstrap/js/bootstrap.min.js"></script>
-    {% block js %}{% endblock %}
-    <footer class="site-footer">
-        <div class="container">
-            <p>&copy; 2025 Ailevate. All rights reserved.</p>
-        </div>
-    </footer>
+  <script src="{{ config.STATIC_URL }}/jquery/jquery-3.6.0.min.js"></script>
+  <script src="{{ config.STATIC_URL }}/bootstrap/js/bootstrap.min.js"></script>
+  {% block js %}{% endblock %}
+  <footer class="site-footer">
+      <div class="container">
+          <p>&copy; 2025 Ailevate. All rights reserved.</p>
+      </div>
+  </footer>
 </body>
 </html>

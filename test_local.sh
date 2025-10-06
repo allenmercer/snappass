@@ -16,18 +16,23 @@ echo "--- 3. Applying Ailevate customizations..."
 # Create a directory for images inside the cloned repo's static folder
 mkdir -p source/snappass/static/img
 mkdir -p source/snappass/static/css
+mkdir -p source/snappass/static/scripts
 
-# Copy the logo, stylesheet, and all HTML templates
+# Copy the logo, stylesheet, HTML templates, and scripts
 cp -Rv customizations/img/* source/snappass/static/img/
 cat customizations/css/custom.css >> source/snappass/static/css/custom.css
 cp -Rv customizations/templates/* source/snappass/templates/
+cp -Rv source/snappass/static/snappass/scripts/* source/snappass/static/scripts
 
 # Replace SnapPass in set_password
-sed -i '' 's/SnapPass/Ailevate Echo/g' source/snappass/templates/set_password.html
+sed -i '' 's/SnapPass/Ailevate Secret Sharing Service/g' source/snappass/templates/set_password.html
+
+# Replaces snappass in templates for script files
+sed -i '' 's~/snappass~~' source/snappass/templates/*
 
 # Replace all instances of the word snappass or snap pass, case insensitive, from any template to prevent leakage.
-sed -i '' '/STATIC_URL/! s/snappass/ailevateecho/I' source/snappass/templates/*
-sed -i '' '/STATIC_URL/! s/snap pass/ailevate echo/I' source/snappass/templates/*
+sed -i '' 's/snappass/Ailevate Secret Sharing Service/I' source/snappass/templates/*
+sed -i '' 's/snap pass/Ailevate Secret Sharing Service/I' source/snappass/templates/*
 
 echo "--- 4. Building and running containers with Docker Compose..."
 # Build the new image and start the echo and redis containers in the background
