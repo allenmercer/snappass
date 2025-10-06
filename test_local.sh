@@ -15,10 +15,11 @@ git clone --depth 1 https://github.com/pinterest/snappass.git source
 echo "--- 3. Applying Ailevate customizations..."
 # Create a directory for images inside the cloned repo's static folder
 mkdir -p source/snappass/static/img
+mkdir -p source/snappass/static/css
 
 # Copy the logo, stylesheet, and all HTML templates
 cp -Rv customizations/img/* source/snappass/static/img/
-cat customizations/css/custom.css >> source/snappass/static/snappass/css/custom.css
+cat customizations/css/custom.css >> source/snappass/static/css/custom.css
 cp -Rv customizations/templates/* source/snappass/templates/
 
 # Replace SnapPass in set_password

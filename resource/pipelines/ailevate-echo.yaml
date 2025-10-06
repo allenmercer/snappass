@@ -39,10 +39,12 @@ stages:
         
         # Create a directory for images
         mkdir -p source/snappass/static/img
+        mkdir -p source/snappass/static/css
+
 
         # Copy the logo, background, stylesheet, and all HTML templates
         cp -Rv customizations/img/* source/snappass/static/img/
-        cat customizations/css/custom.css >> source/snappass/static/snappass/css/custom.css
+        cat customizations/css/custom.css >> source/snappass/static/css/custom.css
         cp -Rv customizations/templates/* source/snappass/templates/
         
         # Replace the SnapPass text in set_password
