@@ -1,7 +1,7 @@
 services:
   # This is your Ailevate Echo application service
   echo:
-    image: ailevate.azurecr.io/echo:19248
+    image: ailevate.azurecr.io/internal/secret-share:latest
     platform: linux/amd64
     ports:
       - "8080:5000"
