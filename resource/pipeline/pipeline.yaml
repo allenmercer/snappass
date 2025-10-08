@@ -32,9 +32,9 @@ stages:
             - script: git clone --branch v1.6.2 --depth 1 https://github.com/pinterest/snappass.git source
               displayName: 'Clone Official Snappass Repo'
 
-            ### Task to Apply Branding
+            ### Task to Apply File Branding
             - script: |
-                echo "Applying Ailevate customizations..."
+                echo "Applying Ailevate file customizations..."
                 
                 # Create folders for custom static content
                 mkdir -p source/snappass/static/img
@@ -46,7 +46,10 @@ stages:
                 cp customizations/css/custom.css source/snappass/static/css/custom.css
                 cp -Rv customizations/templates/* source/snappass/templates/
                 cp -Rv source/snappass/static/snappass/scripts/* source/snappass/static/scripts
-                
+              displayName: 'Apply File Branding'
+            ### Task to Apply Text Branding
+            - script: |
+                echo "Applying Ailevate text customizations..."
                 # Replace the SnapPass text in set_password
                 sed -i 's/SnapPass/Ailevate Secret Sharing Service/g' source/snappass/templates/set_password.html
 
@@ -56,7 +59,7 @@ stages:
                 # Replace all instances of the word snappass or snap pass, case insensitive, from any template to prevent leakage.
                 sed -i 's/snappass/Ailevate Secret Sharing Service/I' source/snappass/templates/*
                 sed -i 's/snap pass/Ailevate Secret Sharing Service/I' source/snappass/templates/*
-              displayName: 'Apply Branding'
+              displayName: 'Apply Text Branding'
 
             ### Task to Build and Push Docker Image
             - task: Docker@2
