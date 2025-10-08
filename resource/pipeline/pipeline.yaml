@@ -29,7 +29,7 @@ stages:
             - checkout: self
             
             ### Task to Clone Official Snappass Repo
-            - script: git clone --depth 1 https://github.com/pinterest/snappass.git source
+            - script: git clone --branch v1.6.2 --depth 1 https://github.com/pinterest/snappass.git source
               displayName: 'Clone Official Snappass Repo'
 
             ### Task to Apply Branding
