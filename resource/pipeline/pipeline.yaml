@@ -1,10 +1,11 @@
-trigger: none
-  #- main
-pr: none
+trigger:
+  - main
+pr:
+  - main
 
 variables:
-  IMAGE_TAG: '$(Build.BuildId)'
   VM_IMAGE: 'ubuntu-latest'
+  IMAGE_TAG: $[if(eq(variables['Build.Reason'], 'PullRequest'), 'pr-$(System.PullRequest.PullRequestId)', 'latest')]
 
 stages:
   ############################################################
@@ -70,7 +71,7 @@ stages:
                 containerRegistry: '$(ACR_SERVICE_CONNECTION)'
                 repository: '$(IMAGE_NAME)'
                 dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
-                tags: 'latest' # '$(IMAGE_TAG)'
+                tags: '$(IMAGE_TAG)'
                 buildContext: 'source'
 
 
@@ -79,6 +80,8 @@ stages:
 ############################################################
 - stage: deployAzureInfrastructure
   displayName: 'Deploy Azure Infrastructure'
+  dependsOn: BuildAndPush
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
   jobs:
   - deployment: deployAzureInfrastructure
     displayName: 'Deploy Azure Infrastructure'
@@ -166,7 +169,7 @@ stages:
                 echo "Found Object ID for pipeline: $PIPELINE_SP_ID"
                 # 3. Assign the policy using the reliably-found Object ID
                 az keyvault set-policy --name "$KEY_VAULT_NAME" --object-id "$PIPELINE_SP_ID" --secret-permissions get list set delete purge --output none
-                
+
           ### Task to Run Terraform Init
           - task: TerraformTaskV4@4
             displayName: 'Run Terrafrom Init'
