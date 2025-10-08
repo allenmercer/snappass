@@ -16,7 +16,8 @@ RUN pip install -r requirements.txt
 # Install the gunicorn web server for production use
 RUN pip install --no-cache-dir gunicorn
 
-RUN pybabel compile -d snappass/translations
+# Required for next tagged release
+# RUN pybabel compile -d snappass/translations
 
 RUN python setup.py install && \
     chown -R snappass $APP_DIR && \
