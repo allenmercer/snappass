@@ -47,6 +47,7 @@ stages:
                 cp -Rv customizations/templates/* source/snappass/templates/
                 cp -Rv source/snappass/static/snappass/scripts/* source/snappass/static/scripts
               displayName: 'Apply File Branding'
+
             ### Task to Apply Text Branding
             - script: |
                 echo "Applying Ailevate text customizations..."
@@ -120,9 +121,9 @@ stages:
                     echo "Role assignment already exists."
                   fi
                 fi
-          ### Task to Bootstrap RG, Key Vault, and Permissions
+          ### Task to Bootstrap RG and Key Vault
           - task: AzureCLI@2
-            displayName: 'Bootstrap RG, Key Vault, and Permissions'
+            displayName: 'Bootstrap RG and Key Vault'
             inputs:
               azureSubscription: '$(AZURE_SERVICE_SPN)'
               scriptType: 'bash'
@@ -145,6 +146,17 @@ stages:
                     --tags workloadtier='$(TAG_REQUIRED_WORKLOADTIER)' customer='$(TAG_REQUIRED_CUSTOMER)' environment='$(AZURE_PROJECT_LE)' workload='$(AZURE_RG_NAME)'
                 fi
 
+          ### Task to Bootstrap Key Vault Permissions
+          - task: AzureCLI@2
+            displayName: 'Bootstrap Key Vault Permissons'
+            inputs:
+              azureSubscription: '$(AZURE_SERVICE_SPN)'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                set -e
+                KEY_VAULT_NAME="$(AZURE_RG_NAME)-kv"
+
                 echo "Granting pipeline secret permissions on Key Vault..."
                 # 1. Get the Application (Client) ID of the currently logged-in Service Principal
                 SP_APP_ID=$(az account show --query "user.name" -o tsv)
@@ -154,6 +166,7 @@ stages:
                 echo "Found Object ID for pipeline: $PIPELINE_SP_ID"
                 # 3. Assign the policy using the reliably-found Object ID
                 az keyvault set-policy --name "$KEY_VAULT_NAME" --object-id "$PIPELINE_SP_ID" --secret-permissions get list set delete purge --output none
+                
           ### Task to Run Terraform Init
           - task: TerraformTaskV4@4
             displayName: 'Run Terrafrom Init'
