@@ -1,6 +1,6 @@
 # Azure Cache for Redis Block
 resource "azurerm_redis_cache" "redis" {
-  name                          = "${var.project_name}-redis"
+  name                          = "${var.rg_name}-redis"
   location                      = var.location
   resource_group_name           = var.rg_name
   capacity                      = 1 # C1 Standard
@@ -21,7 +21,7 @@ resource "azurerm_private_dns_zone" "redis_pdz" {
 
 # VNet link for the Private DNS Zone
 resource "azurerm_private_dns_zone_virtual_network_link" "redis_pdz_vnet_link" {
-  name                  = "${var.project_name}-redis-pdz-vnet-link"
+  name                  = "${var.rg_name}-redis-pdz-vnet-link"
   resource_group_name   = var.rg_name
   private_dns_zone_name = azurerm_private_dns_zone.redis_pdz.name
   virtual_network_id    = azurerm_virtual_network.vnet.id
@@ -29,7 +29,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "redis_pdz_vnet_link" {
 
 # Private Endpoint for Redis Cache
 resource "azurerm_private_endpoint" "redis_pe" {
-  name                = "${var.project_name}-redis-pe"
+  name                = "${var.rg_name}-redis-pe"
   location            = var.location
   resource_group_name = var.rg_name
   subnet_id           = azurerm_subnet.pe_snet.id
@@ -39,7 +39,7 @@ resource "azurerm_private_endpoint" "redis_pe" {
     private_dns_zone_ids = [azurerm_private_dns_zone.redis_pdz.id]
   }
   private_service_connection {
-    name                           = "${var.project_name}-redis-psc"
+    name                           = "${var.rg_name}-redis-psc"
     private_connection_resource_id = azurerm_redis_cache.redis.id
     is_manual_connection           = false
     subresource_names              = ["redisCache"]

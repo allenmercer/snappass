@@ -1,107 +1,93 @@
-trigger: none
+trigger:
+  - main
 pr: none
 
-parameters:
-- name: action
-  displayName: What do you want to run?
-  type: string
-  default: restore
-  values:
-  - restore     # run stages 1–3
-  - destroy     # run stage 4 only
-
 variables:
-  ACR_NAME: 'ailevate'
-  IMAGE_NAME: 'echo'
   IMAGE_TAG: '$(Build.BuildId)'
   VM_IMAGE: 'ubuntu-latest'
 
 stages:
   ############################################################
-  ### Stage to Build Docker Image                          ###
+  ### Stage to Build and Push Docker Image                 ###
   ############################################################
 - stage: BuildAndPush
   displayName: 'Build and Push Docker Image'
-  condition: eq('${{ parameters.action }}','restore')
   jobs:
-  - job: BuildAndPushJob
-    displayName: 'Build and Push'
-    pool:
-      vmImage: $(VM_IMAGE)
-    steps:
-    - checkout: self
-      
-    - script: git clone --depth 1 https://github.com/pinterest/snappass.git source
-      displayName: 'Clone Official Snappass Repo'
+    ### Job to Build and Push ###
+    - deployment: BuildAndPushJob
+      displayName: 'Build and Push'
+      pool:
+        vmImage: $(VM_IMAGE)
+      workspace:
+        clean: all
+      environment: '$(AZURE_RG_NAME)'
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+            ### Task to Checkout GitHub Repository
+            - checkout: self
+            
+            ### Task to Clone Official Snappass Repo
+            - script: git clone --depth 1 https://github.com/pinterest/snappass.git source
+              displayName: 'Clone Official Snappass Repo'
 
-    - script: |
-        echo "Applying Ailevate customizations..."
-        
-        # Create a directory for images
-        mkdir -p source/snappass/static/img
-        mkdir -p source/snappass/static/css
+            ### Task to Apply Branding
+            - script: |
+                echo "Applying Ailevate customizations..."
+                
+                # Create folders for custom static content
+                mkdir -p source/snappass/static/img
+                mkdir -p source/snappass/static/css
+                mkdir -p source/snappass/static/scripts
 
+                # Copy the logo, background, stylesheet, HTML templates, and scripts
+                cp -Rv customizations/img/* source/snappass/static/img/
+                cat customizations/css/custom.css >> source/snappass/static/css/custom.css
+                cp -Rv customizations/templates/* source/snappass/templates/
+                cp -Rv source/snappass/static/snappass/scripts/* source/snappass/static/scripts
+                
+                # Replace the SnapPass text in set_password
+                sed -i 's/SnapPass/Ailevate Secret Sharing Service/g' source/snappass/templates/set_password.html
 
-        # Copy the logo, background, stylesheet, and all HTML templates
-        cp -Rv customizations/img/* source/snappass/static/img/
-        cat customizations/css/custom.css >> source/snappass/static/css/custom.css
-        cp -Rv customizations/templates/* source/snappass/templates/
-        
-        # Replace the SnapPass text in set_password
-        # This is one of two places where the end user would see the word SnapPass.
-        # The second place is the Redis prefix.
-        sed -i 's/SnapPass/Ailevate Echo/g' source/snappass/templates/set_password.html
+                # Replace "/snappass" for script paths in templates
+                sed -i 's~/snappass~~' source/snappass/templates/*
 
-        # Replace all instances of the word snappass or snap pass, case insensitive, from any template to prevent leakage.
-        sed -i '/STATIC_URL/! s/snappass/ailevateecho/I' source/snappass/templates/*
-        sed -i '/STATIC_URL/! s/snap pass/ailevate echo/I' source/snappass/templates/*
-      displayName: 'Apply Custom Templates, Styles, & Assets'
+                # Replace all instances of the word snappass or snap pass, case insensitive, from any template to prevent leakage.
+                sed -i 's/snappass/Ailevate Secret Sharing Service/I' source/snappass/templates/*
+                sed -i 's/snap pass/Ailevate Secret Sharing Service/I' source/snappass/templates/*
+              displayName: 'Apply Branding'
 
-    - task: Docker@2
-      displayName: 'Build and Push Docker Image'
-      inputs:
-        command: buildAndPush # CHANGED: Using the combined command
-        containerRegistry: '$(ACR_SERVICE_CONNECTION)'
-        repository: '$(IMAGE_NAME)'
-        dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
-        tags: 'latest' # '$(IMAGE_TAG)'
-        buildContext: 'source'
-    
-    - task: CopyFiles@2
-      displayName: 'Copy Terraform Manifests'
-      inputs:
-        SourceFolder: '$(System.DefaultWorkingDirectory)/resource/terraform-manifests'
-        Contents: '**'
-        TargetFolder: '$(Build.ArtifactStagingDirectory)/terraform'
-    
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish Terraform Artifact'
-      inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)/terraform'
-        ArtifactName: 'terraform-manifests'
+            ### Task to Build and Push Docker Image
+            - task: Docker@2
+              displayName: 'Build and Push Docker Image'
+              inputs:
+                command: buildAndPush # CHANGED: Using the combined command
+                containerRegistry: '$(ACR_SERVICE_CONNECTION)'
+                repository: '$(IMAGE_NAME)'
+                dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
+                tags: 'latest' # '$(IMAGE_TAG)'
+                buildContext: 'source'
+
 
 ############################################################
 ### Stage to Deploy Azure Infrastructure                 ###
 ############################################################
 - stage: deployAzureInfrastructure
   displayName: 'Deploy Azure Infrastructure'
-  dependsOn: BuildAndPush
-  condition: and(succeeded(), eq('${{ parameters.action }}','restore'))
-  #dependsOn: BuildAndPush # CHANGED: Depends on the new combined stage
   jobs:
   - deployment: deployAzureInfrastructure
     displayName: 'Deploy Azure Infrastructure'
     pool:
       name: 'global-aks'
-    environment: 'allen-playground01' # FIX
+    environment: '$(AZURE_RG_NAME)'
     strategy:
       runOnce:
         deploy:
           steps:
+          ### Task to Checkout GitHub Repository
           - checkout: self
-          #- download: current
-          #  artifact: terraform-manifests
-          
+          ### Task to Replace Tokens
           - task: ReplaceTokens@6
             displayName: 'Replace Terraform Variables'
             inputs:
@@ -109,7 +95,6 @@ stages:
               tokenPattern: custom
               tokenPrefix: '<-'
               tokenSuffix: '->'
-
           ### Task to Assign Resource Group Permissions
           - task: AzureCLI@2
             displayName: 'Assign Resource Group Permissions'
@@ -141,40 +126,32 @@ stages:
               scriptLocation: 'inlineScript'
               inlineScript: |
                 set -e
-                KEY_VAULT_NAME="$(AZURE_PROJECT_NAME)-kv"
-                
+                KEY_VAULT_NAME="$(AZURE_RG_NAME)-kv"
+
                 # This command does not need tags; Terraform will add them.
                 echo "Ensuring Resource Group '$(AZURE_RG_NAME)' exists..."
-                az group create --name "$AZURE_RG_NAME" --location "$AZURE_RG_LOCATION"
+                az group create --name "$AZURE_RG_NAME" --location "$AZURE_RG_LOCATION" \
+                --tags workloadtier='$(TAG_REQUIRED_WORKLOADTIER)' customer='$(TAG_REQUIRED_CUSTOMER)' environment='$(AZURE_PROJECT_LE)' workload='$(AZURE_RG_NAME)'
 
                 echo "Ensuring Key Vault '$KEY_VAULT_NAME' exists with tags..."
                 if az keyvault show --name "$KEY_VAULT_NAME" --resource-group "$(AZURE_RG_NAME)" &>/dev/null; then
                   echo "Key Vault '$KEY_VAULT_NAME' already exists. Skipping creation."
                 else
                   echo "Key Vault '$KEY_VAULT_NAME' not found. Creating..."
-                  # UPDATED: Replaced --enable-soft-delete with --retention-days
                   az keyvault create --name "$KEY_VAULT_NAME" --resource-group "$(AZURE_RG_NAME)" --location "$(AZURE_RG_LOCATION)" --retention-days 7 --enable-rbac-authorization false \
-                    --tags \
-                      creator='pipeline' \
-                      workloadtier='$(TAG_REQUIRED_WORKLOADTIER)' \
-                      customer='$(TAG_REQUIRED_CUSTOMER)' \
-                      environment='$(AZURE_PROJECT_LE)' \
-                      workload='$(AZURE_PROJECT_NAME)'
+                    --tags workloadtier='$(TAG_REQUIRED_WORKLOADTIER)' customer='$(TAG_REQUIRED_CUSTOMER)' environment='$(AZURE_PROJECT_LE)' workload='$(AZURE_RG_NAME)'
                 fi
 
                 echo "Granting pipeline secret permissions on Key Vault..."
-                
                 # 1. Get the Application (Client) ID of the currently logged-in Service Principal
                 SP_APP_ID=$(az account show --query "user.name" -o tsv)
                 echo "Found Application ID for pipeline: $SP_APP_ID"
-
                 # 2. Use the Application ID to look up the Service Principal's unique Object ID
                 PIPELINE_SP_ID=$(az ad sp show --id $SP_APP_ID --query "id" -o tsv)
                 echo "Found Object ID for pipeline: $PIPELINE_SP_ID"
-
                 # 3. Assign the policy using the reliably-found Object ID
                 az keyvault set-policy --name "$KEY_VAULT_NAME" --object-id "$PIPELINE_SP_ID" --secret-permissions get list set delete purge --output none
-                
+          ### Task to Run Terraform Init
           - task: TerraformTaskV4@4
             displayName: 'Run Terrafrom Init'
             inputs:
@@ -186,8 +163,8 @@ stages:
               backendAzureRmResourceGroupName: '$(TERRAFORM_BACKEND_RG)'
               backendAzureRmStorageAccountName: '$(TERRAFORM_BACKEND_SA)'
               backendAzureRmContainerName: '$(TERRAFORM_BACKEND_CONTAINER)'
-              backendAzureRmKey: '$(AZURE_PROJECT_NAME).tfstate'
-
+              backendAzureRmKey: '$(AZURE_RG_NAME).tfstate'
+          ### Task to Run Terraform Plan
           - task: TerraformTaskV4@4
             displayName: 'Run Terrafrom Plan'
             inputs:
@@ -196,7 +173,7 @@ stages:
               workingDirectory: '$(System.DefaultWorkingDirectory)/$(REPO_MANIFEST_FOLDER)/terraform-manifests'
               environmentServiceNameAzureRM: '$(AZURE_SERVICE_SPN)'
               commandOptions: '-var="image_tag=$(Build.BuildId)" -out create-$(Build.BuildId).plan'
-
+          ### Task to Run Terraform Apply
           - task: TerraformTaskV4@4
             displayName: 'Run Terrafrom Apply'
             inputs:
@@ -205,7 +182,6 @@ stages:
               workingDirectory: '$(System.DefaultWorkingDirectory)/$(REPO_MANIFEST_FOLDER)/terraform-manifests'
               environmentServiceNameAzureRM: '$(AZURE_SERVICE_SPN)'
               commandOptions: 'create-$(Build.BuildId).plan'
-
           ### Task to Assign Resource Group Permissions
           - task: AzureCLI@2
             displayName: 'Assign Resource Group Permissions'
@@ -227,76 +203,17 @@ stages:
                   else
                     echo "Role assignment already exists."
                   fi
-                  PRINCIPAL_ID=$(az webapp identity show -g allen-playground01 -n echopgab-lwa --query principalId --output tsv)
-                  REGISTRY_ID=$(az acr show -g sre-store -n ailevate --query id --output tsv)
-                  az role assignment create --assignee $PRINCIPAL_ID --scope $REGISTRY_ID --role "AcrPull"
                 fi
+          ### Task to Restart App Service
           - task: AzureCLI@2
-            displayName: 'Restart App Service to Pull Latest Image'
+            displayName: 'Restart App Service'
             inputs:
               azureSubscription: '$(AZURE_SERVICE_SPN)'
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
-                echo "Restarting App Service '$(AZURE_PROJECT_NAME)-lwa' to force a pull of the :latest image..."
-                az webapp restart --name "$(AZURE_PROJECT_NAME)-lwa" --resource-group "$(AZURE_RG_NAME)"
-
-#          - task: AzureCLI@2
-#            displayName: 'Generate and Store Secrets in Key Vault'
-#            inputs:
-#              azureSubscription: '$(AZURE_SERVICE_SPN)'
-#              scriptType: 'bash'
-#              scriptLocation: 'inlineScript'
-#              inlineScript: |
-#                set -e
-#                KEY_VAULT_NAME="$(AZURE_PROJECT_NAME)-kv"
-#                REDIS_NAME="$(AZURE_PROJECT_NAME)-redis"
-#                SECRET_KEY_NAME="ECHO-SECRET-KEY"
-#                REDIS_KEY_NAME="REDIS-URL-FULL"
-#                REDIS_HOST="$(AZURE_PROJECT_NAME)-redis.redis.cache.windows.net"
-#
-#                if az keyvault secret show --vault-name "$KEY_VAULT_NAME" --name "$SECRET_KEY_NAME" &>/dev/null; then
-#                  echo "Secret '$SECRET_KEY_NAME' already exists."
-#                else
-#                  echo "Generating and storing secret: $SECRET_KEY_NAME"
-#                  SECRET_VALUE=$(openssl rand -base64 64)
-#                  az keyvault secret set --vault-name "$KEY_VAULT_NAME" --name "$SECRET_KEY_NAME" --value "$SECRET_VALUE"
-#                fi
-#                
-#                echo "Retrieving Redis Primary Key and storing in Key Vault."
-#                REDIS_KEY=$(az redis list-keys --name "$REDIS_NAME" --resource-group "$(AZURE_RG_NAME)" --query "primaryKey" -o tsv)
-#                REDIS_URL_FULL="rediss://default:${REDIS_KEY}@${REDIS_HOST}:6380/0"
-#                az keyvault secret set --vault-name "$KEY_VAULT_NAME" --name "$REDIS_KEY_NAME" --value "$REDIS_URL_FULL"
-#
-#          - task: AzureCLI@2
-#            displayName: 'Set Final Application Settings'
-#            inputs:
-#              azureSubscription: '$(AZURE_SERVICE_SPN)'
-#              scriptType: 'bash'
-#              scriptLocation: 'inlineScript'
-#              inlineScript: |
-#                set -e
-#                APP_NAME="$(AZURE_PROJECT_NAME)-lwa"
-#                KV_NAME="$(AZURE_PROJECT_NAME)-kv"
-#                #REDIS_HOST="$(AZURE_PROJECT_NAME)-redis.redis.cache.windows.net"
-#
-#                SECRET_KEY_URI=$(az keyvault secret show --vault-name $KV_NAME --name "ECHO-SECRET-KEY" --query "id" -o tsv)
-#                #REDIS_KEY_URI=$(az keyvault secret show --vault-name $KV_NAME --name "REDIS-ACCESS-KEY" --query "id" -o tsv)
-#                REDIS_URL_FULL_URI=$(az keyvault secret show --vault-name $KV_NAME --name "REDIS-URL-FULL" --query "id" -o tsv)
-#
-#                #REDIS_URL_SETTING="redis://:@Microsoft.KeyVault(SecretUri=${REDIS_KEY_URI})@${REDIS_HOST}:6380"
-#                #REDIS_URL_SETTING="rediss://default:@Microsoft.KeyVault(SecretUri=${REDIS_KEY_URI})@${REDIS_HOST}:6380/0"
-#
-#                echo "Updating App Service Application Settings..."
-#                az webapp config appsettings set -g "$(AZURE_RG_NAME)" -n "$APP_NAME" --settings \
-#                  "SECRET_KEY=@Microsoft.KeyVault(SecretUri=${SECRET_KEY_URI})" \
-#                  "REDIS_URL=@Microsoft.KeyVault(SecretUri=${REDIS_URL_FULL_URI})" \
-#                  "WEBSITES_PORT=5000" \
-#                  "REDIS_PREFIX=echo" \
-#                  "DEBUG=false" \
-#                  "NO_SSL=false" \
-#                  "SNAPPASS_PORT=5000"
-#                  # Change REDIS_PREFIX to AZURE_PROJECT_NAME
+                echo "Restarting App Service '$(AZURE_RG_NAME)-ailwa' to force a pull of the :latest image..."
+                az webapp restart --name "$(AZURE_RG_NAME)-ailwa" --resource-group "$(AZURE_RG_NAME)"
 
 
 ############################################################

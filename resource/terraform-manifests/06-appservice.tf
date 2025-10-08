@@ -1,6 +1,6 @@
 # App Service Plan Block
 resource "azurerm_service_plan" "asp" {
-  name                = "${var.project_name}-asp"
+  name                = "${var.rg_name}-asp"
   resource_group_name = var.rg_name
   location            = var.location
   os_type             = "Linux"
@@ -10,7 +10,7 @@ resource "azurerm_service_plan" "asp" {
 
 # Linux Web App Block
 resource "azurerm_linux_web_app" "lwa" {
-  name                = "${var.project_name}-lwa"
+  name                = "${var.rg_name}-ailwa"
   resource_group_name = var.rg_name
   location            = var.location
   service_plan_id     = azurerm_service_plan.asp.id
@@ -24,12 +24,12 @@ resource "azurerm_linux_web_app" "lwa" {
   site_config {
     always_on  = true
     ftps_state = "Disabled"
-    #linux_fx_version = "DOCKER|ailevate.azurecr.io/echo:${var.image_tag}"
+    health_check_path   = "/"
+    health_check_eviction_time_in_min = 10
     container_registry_use_managed_identity = true
     application_stack {
       # This points to the image built and pushed by the pipeline
-      #docker_image_name   = "echo:${var.image_tag}"
-      docker_image_name   = "echo:latest"
+      docker_image_name   = "${var.image_name}:latest"
       docker_registry_url = "https://${data.azurerm_container_registry.acr.login_server}"
     }
   }
@@ -37,7 +37,7 @@ resource "azurerm_linux_web_app" "lwa" {
     "REDIS_URL"     = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.redis_url.id})"
     "SECRET_KEY"    = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.app_key.id})"
     "WEBSITES_PORT" = "5000"
-    "REDIS_PREFIX"  = "echo"
+    "REDIS_PREFIX"  = "ailevate"
     "DEBUG"         = "false"
     "NO_SSL"        = "false"
     "SNAPPASS_PORT" = "5000"
@@ -62,6 +62,4 @@ resource "azurerm_role_assignment" "app_to_acr" {
   scope                = data.azurerm_container_registry.acr.id
   role_definition_name = "AcrPull"
   principal_id         = azurerm_linux_web_app.lwa.identity[0].principal_id # or object id
-  # skip service principal check
-  # --acr-use-managed-identity true
 }

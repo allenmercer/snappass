@@ -1,17 +1,6 @@
-# Key Vault Block
-#resource "azurerm_key_vault" "kv" {
-#  name                        = "${var.project_name}-kv"
-#  location                    = var.location
-#  resource_group_name         = var.rg_name
-#  tenant_id                   = data.azurerm_client_config.current.tenant_id
-#  sku_name                    = "standard"
-#  soft_delete_retention_days  = 7
-#  purge_protection_enabled    = false
-#  enable_rbac_authorization   = false
-#  tags                        = local.tags
-#}
+# Key Vault Data Block
 data "azurerm_key_vault" "kv" {
-  name                = "${var.project_name}-kv"
+  name                = "${var.rg_name}-kv"
   resource_group_name = var.rg_name
 }
 
@@ -24,7 +13,7 @@ resource "random_string" "secret_key" {
 
 # Terraform now creates the application secret key with the random value
 resource "azurerm_key_vault_secret" "app_key" {
-  name         = "ECHO-SECRET-KEY"
+  name         = "SECRET-KEY"
   value        = random_string.secret_key.result
   key_vault_id = data.azurerm_key_vault.kv.id
 }
@@ -41,18 +30,8 @@ resource "azurerm_key_vault_secret" "redis_url" {
   depends_on = [azurerm_redis_cache.redis]
 }
 
-# Access Policy Blocks
+# Access Policy Block
 data "azurerm_client_config" "current" {}
-
-## Access Policy for the Pipeline Service Principal
-#resource "azurerm_key_vault_access_policy" "pipeline_policy" {
-#  key_vault_id = data.azurerm_key_vault.kv.id
-#  tenant_id    = data.azurerm_client_config.current.tenant_id
-#  object_id    = data.azurerm_client_config.current.object_id
-#  secret_permissions = [
-#    "Get", "List", "Set", "Delete", "Purge"
-#  ]
-#}
 
 # Access Policy for the App Service's Managed Identity
 resource "azurerm_key_vault_access_policy" "app_service_policy" {

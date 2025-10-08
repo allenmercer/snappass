@@ -39,16 +39,16 @@ variable "environment" {
   type = string
 }
 
-variable "project_name" {
-  description = "Project Name"
-  # This variable already exists in the pipeline as AZURE_PROJECT_NAME.  It can be sent as a Terraform command line option.
-  default = "<-AZURE_PROJECT_NAME->"
+variable "image_name" {
+  description = "Image Name"
+  # This variable already exists in the pipeline as IMAGE_NAME.  It can be sent as a Terraform command line option.
+  default = "<-IMAGE_NAME->"
   type = string
 }
 
 variable "custom_subdomain" {
-  description = "WordPress Subdomain"
-  # This variable already exists in the pipeline as AZURE_PROJECT_NAME.  It can be sent as a Terraform command line option.
+  description = "Custom Subdomain"
+  # This variable already exists in the pipeline as CUSTOM_SUBDOMAIN.  It can be sent as a Terraform command line option.
   default = "<-CUSTOM_SUBDOMAIN->"
   type = string
 }
@@ -81,6 +81,6 @@ locals {
     workloadtier = var.workloadtier
     customer = var.customer
     environment = var.environment
-    workload = var.project_name
+    workload = var.rg_name
   }
 }
