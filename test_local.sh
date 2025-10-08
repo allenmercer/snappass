@@ -20,7 +20,7 @@ mkdir -p source/snappass/static/scripts
 
 # Copy the logo, stylesheet, HTML templates, and scripts
 cp -Rv customizations/img/* source/snappass/static/img/
-cat customizations/css/custom.css >> source/snappass/static/css/custom.css
+cp customizations/css/custom.css source/snappass/static/css/custom.css
 cp -Rv customizations/templates/* source/snappass/templates/
 cp -Rv source/snappass/static/snappass/scripts/* source/snappass/static/scripts
 
