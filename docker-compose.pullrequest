@@ -1,0 +1,19 @@
+services:
+  # This is your Ailevate Secret Sharing Service application service
+  secret-share:
+    image: ailevate.azurecr.io/internal/secret-share:pullrequest
+    platform: linux/amd64
+    ports:
+      - "8080:5000"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - SECRET_KEY=${SECRET_KEY}
+      - BASE_URL=http://localhost:8080
+      - DEBUG=true # Enable debug mode for better local error messages
+      - REDIS_PREFIX=ailevate
+    depends_on:
+      - redis
+
+  # This is a local Redis database service that 'secret-share' will connect to
+  redis:
+    image: redis:alpine

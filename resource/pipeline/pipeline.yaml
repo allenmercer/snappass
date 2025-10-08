@@ -294,7 +294,7 @@ stages:
                   backendAzureRmResourceGroupName: '$(TERRAFORM_BACKEND_RG)'
                   backendAzureRmStorageAccountName: '$(TERRAFORM_BACKEND_SA)'
                   backendAzureRmContainerName: '$(TERRAFORM_BACKEND_CONTAINER)'
-                  backendAzureRmKey: '$(AZURE_PROJECT_NAME).tfstate'
+                  backendAzureRmKey: '$(AZURE_RG_NAME).tfstate'
                   
               ### Task to Run Terraform Plan Destroy
               - task: TerraformTaskV4@4
@@ -324,7 +324,7 @@ stages:
                     set -e
 
                     if [ "$(az group exists --name '$(AZURE_RG_NAME)')" = "true" ]; then
-                      KEY_VAULT_NAME="$(AZURE_PROJECT_NAME)-kv"
+                      KEY_VAULT_NAME="$(AZURE_RG_NAME)-kv"
                       echo "Purging and deleting Key Vault '$KEY_VAULT_NAME'..."
                       # Delete the Key Vault first
                       az keyvault delete --name "$KEY_VAULT_NAME" --resource-group "$(AZURE_RG_NAME)"
