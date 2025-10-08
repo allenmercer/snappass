@@ -10,7 +10,7 @@ docker-compose -f docker-compose.local down --rmi local
 rm -rf source
 
 echo "--- 2. Cloning official Snappass repository..."
-git clone --depth 1 https://github.com/pinterest/snappass.git source
+git clone --branch v1.6.2 --depth 1 https://github.com/pinterest/snappass.git source
 
 echo "--- 3. Applying Ailevate customizations..."
 # Create a directory for images inside the cloned repo's static folder
