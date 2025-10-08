@@ -32,8 +32,11 @@
   {% block js %}{% endblock %}
   <footer class="site-footer">
       <div class="container">
-          <p>&copy; 2025 Ailevate. All rights reserved.</p>
+          <p>&copy; <span id="current-year"></span> Ailevate. All rights reserved.</p>
       </div>
   </footer>
+  <script>
+    document.getElementById('current-year').textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
