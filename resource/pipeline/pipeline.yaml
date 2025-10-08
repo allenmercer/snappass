@@ -221,7 +221,7 @@ stages:
 ############################################################
 - stage: destroyAzureInfrastructure
   displayName: 'Destroy Azure Infrastructure'
-  condition: eq('${{ parameters.action }}','destroy')
+  trigger: manual
   jobs:
     ### Job to Destroy Azure Infrastructure ###
     - deployment: destroyAzureInfrastructure
