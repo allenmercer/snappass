@@ -19,6 +19,8 @@ The solution is deployed to Azure and consists of the following key components:
 * **Azure DNS**: Manages the custom domains (e.g., `secret.ailevate.com`) and the managed TLS certificates.
 * **Azure Log Analytics**: A central workspace that collects diagnostic logs and metrics.
 
+![Architecture Diagram](img/secret-share-architecture.png)
+
 ---
 ## 📖 How to Use the Service
 Using the Ailevate Secret Sharing Service is a simple, secure process.
