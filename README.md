@@ -1,5 +1,5 @@
 # Ailevate Secret Sharing Service
-Ailevate Secret Sharing Service is a secure, ephemeral secret sharing service, hosted and managed entirely by Ailevate. It allows employees and customers to safely transmit secrets (e.g., API tokens, credentials) using one-time links, preventing sensitive data from being exposed in email or chat logs.
+[Ailevate Secret Sharing Service](https://secret.ailevate.com) is a secure, ephemeral secret sharing service, hosted and managed entirely by Ailevate. It allows employees and customers to safely transmit secrets (e.g., API tokens, credentials) using one-time links, preventing sensitive data from being exposed in email or chat logs.
 
 ## 📌 Overview
 This project deploys a private, production-ready instance of Ailevate Secret Sharing Service. The deployment is fully automated using Infrastructure as Code (Terraform) and a CI/CD pipeline (Azure DevOps)..
